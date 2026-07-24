@@ -1,0 +1,80 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useDateRange } from "@/components/agent/filters/DateRangeContext";
+import { T } from "@/components/i18n/T";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import type { ConversionRow } from "@/lib/types/agent-data";
+import { formatNumber, formatPercent } from "@/lib/utils/format";
+import { Card } from "@/components/ui/Card";
+import { SectionTitle } from "@/components/ui/SectionTitle";
+
+/**
+ * Kaynak / Ülke / Dil bazlı dönüşüm tabloları — v2 4.3 (3 küçük tablo yan yana).
+ * Oran = Won deal ÷ lead. En yüksek oran satırı vurgulanır.
+ */
+
+function MiniTable({ title, rows }: { title: ReactNode; rows: ConversionRow[] }) {
+  const bestRate = Math.max(...rows.map((r) => r.ratePct));
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="font-display text-[12.5px] font-semibold text-fg">{title}</h3>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="py-1.5 pr-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"><T tr="Grup" en="Group" /></th>
+            <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Lead</th>
+            <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Deal</th>
+            <th className="py-1.5 pl-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"><T tr="Oran" en="Rate" /></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.group} className="border-b border-border last:border-0">
+              <td className="py-2 pr-2 font-body text-[12px] text-fg">{row.group}</td>
+              <td className="px-2 py-2 text-right font-mono text-[11.5px] text-fg-secondary">
+                {formatNumber(row.leads)}
+              </td>
+              <td className="px-2 py-2 text-right font-mono text-[11.5px] text-fg-secondary">
+                {formatNumber(row.deals)}
+              </td>
+              <td className="py-2 pl-2 text-right">
+                <span
+                  className={
+                    row.ratePct === bestRate && row.ratePct > 0
+                      ? "rounded-pill bg-success/12 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-success"
+                      : "font-mono text-[11.5px] text-fg"
+                  }
+                >
+                  {formatPercent(row.ratePct, 1)}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function ConversionTables() {
+  const { data } = useDateRange();
+  const { t } = useLang();
+  return (
+    <Card className="flex flex-col gap-4">
+      <SectionTitle
+        hint={t(
+          "Hangi kaynak, ülke ve dil daha iyi satışa dönüyor? Yeşil rozet en verimli grup — enerjini oraya yönlendir.",
+          "Which source, country and language convert better? The green badge marks the most productive group — focus your energy there.",
+        )}
+      >
+        <T tr="Dönüşüm Kırılımları" en="Conversion Breakdowns" />
+      </SectionTitle>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <MiniTable title="Lead Source" rows={data.sourceConversion} />
+        <MiniTable title={<T tr="Ülke" en="Country" />} rows={data.countryConversion} />
+        <MiniTable title={<T tr="Dil" en="Language" />} rows={data.languageConversion} />
+      </div>
+    </Card>
+  );
+}

@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
+/*
+  Natural Clinic — Agent Dashboard
+  Design tokens — CLAUDE.md Bölüm 3 (Design System)
+  Tailwind v4: yapılandırma CSS içinde @theme ile yapılır.
+
+  Tema stratejisi: <html data-theme="light|dark"> üzerinde attribute.
+  Renk değişkenleri :root (açık) ve [data-theme="dark"] altında tanımlanır,
+  @theme inline bloğu bu değişkenlere referans verdiği için utility'ler
+  (bg-bg, text-fg, border-border ...) tema değişince otomatik güncellenir.
+*/
+
+/* dark: varyantı data-theme attribute'una bağlı çalışsın */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------------------------------------------------------------- */
+/* AÇIK TEMA — nötr zemin + marka + semantik (CLAUDE.md 3.1)          */
+/* ---------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Nötr zemin */
+  --bg: #f7f8fb;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --border: #e7e9f2;
+  --fg: #12172b;
+  --fg-secondary: #6b7290;
+  --fg-muted: #9aa1c0;
+
+  /* Marka vurgu renkleri */
+  --brand: #0ea98b;
+  --brand-secondary: #f5a623;
+  --indigo: #4f63e8;
+  --violet: #7c5cfc;
+
+  /* Semantik durum renkleri */
+  --success: #1faa6b;
+  --warning: #f0b429;
+  --risk: #f2994a;
+  --critical: #eb5757;
+  --neutral: #a0a6bf;
+
+  /* Gölge (yumuşak, geniş yayılım — CLAUDE.md 3.3) */
+  --shadow-card: 0 12px 32px rgba(14, 169, 139, 0.1);
+  --shadow-elevated: 0 18px 44px rgba(14, 169, 139, 0.16);
+  --shadow-soft: 0 6px 18px rgba(18, 23, 43, 0.06);
 }
 
+/* ---------------------------------------------------------------- */
+/* KOYU TEMA — lacivert-siyah zemin (CLAUDE.md 3.1)                   */
+/* ---------------------------------------------------------------- */
+[data-theme="dark"] {
+  --bg: #0d111c;
+  --surface: #161b2c;
+  --elevated: #1d2338;
+  --border: rgba(255, 255, 255, 0.08);
+  --fg: #f4f6fb;
+  --fg-secondary: #8b93b8;
+  --fg-muted: #5c6690;
+
+  --brand: #15d6ae;
+  --brand-secondary: #ffb648;
+  --indigo: #6c7cff;
+  --violet: #9b7bff;
+
+  --success: #34d399;
+  --warning: #fbbf24;
+  --risk: #fb923c;
+  --critical: #f87171;
+  --neutral: #6b7290;
+
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-elevated: 0 18px 44px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------------------------------------------------------------- */
+/* @theme inline — token'ları Tailwind utility'lerine bağla          */
+/* ---------------------------------------------------------------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Renkler → bg-bg, bg-surface, text-fg, border-border, text-brand ... */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+
+  --color-brand: var(--brand);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-indigo: var(--indigo);
+  --color-violet: var(--violet);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-risk: var(--risk);
+  --color-critical: var(--critical);
+  --color-neutral: var(--neutral);
+
+  /* Tipografi (CLAUDE.md 3.2) → font-display, font-body, font-mono */
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-body-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Şekil dili (CLAUDE.md 3.3) → rounded-card, rounded-control, rounded-pill */
+  --radius-card: 22px;
+  --radius-control: 11px;
+  --radius-pill: 999px;
+
+  /* Gölgeler → shadow-card, shadow-elevated, shadow-soft */
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-soft: var(--shadow-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ---------------------------------------------------------------- */
+/* Taban stiller                                                     */
+/* ---------------------------------------------------------------- */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  letter-spacing: 0.001em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Mobil: kaçak bir öğe yatay taşma yaratmasın (tablolar kendi içinde kaydırır) */
+  overflow-x: hidden;
+}
+
+/* Erişilebilirlik: görünür focus (CLAUDE.md 7) — tema rengine uyarlanır */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Tema geçişi (CLAUDE.md 3.1) — sabit 280ms                         */
+/* ThemeProvider toggle anında <html>'e .theme-transition ekler,     */
+/* 280ms sonra kaldırır. Böylece hover geçişleri yavaşlamaz,         */
+/* yalnızca tema değişimi yumuşak crossfade olur.                    */
+/* ---------------------------------------------------------------- */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition:
+    background-color 280ms ease,
+    border-color 280ms ease,
+    color 280ms ease,
+    fill 280ms ease,
+    stroke 280ms ease,
+    box-shadow 280ms ease !important;
+}
+
+/* ---------------------------------------------------------------- */
+/* Hero bandı — dashboard tepesi imza öğesi                          */
+/* Sabit koyu gradient (her iki temada da beyaz metinle AA kontrast).*/
+/* ---------------------------------------------------------------- */
+.hero-band {
+  background-image:
+    radial-gradient(120% 140% at 88% -10%, rgba(124, 92, 252, 0.55) 0%, transparent 55%),
+    radial-gradient(90% 120% at 8% 120%, rgba(21, 214, 174, 0.4) 0%, transparent 50%),
+    linear-gradient(120deg, #0c6f5e 0%, #14324f 52%, #2a2f7a 100%);
+}
+
+/* Hero içi cam efektli mini istatistik kutusu */
+.hero-tile {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+}
+
+/* Accent gradient dolgulu KPI/tile'lar için (beyaz metin, koyu uçlar) */
+.fill-brand {
+  background-image: linear-gradient(135deg, #0ea98b 0%, #067a62 100%);
+}
+.fill-indigo {
+  background-image: linear-gradient(135deg, #4f63e8 0%, #33409e 100%);
+}
+.fill-violet {
+  background-image: linear-gradient(135deg, #7c5cfc 0%, #5433c9 100%);
+}
+
+/* ---------------------------------------------------------------- */
+/* prefers-reduced-motion (CLAUDE.md 3.4 madde 7)                    */
+/* Merkezi temel: giriş/geçiş animasyonlarını anında bitir.          */
+/* Bileşenler ayrıca lib/hooks/usePrefersReducedMotion ile kontrol   */
+/* eder; bu blok CSS tabanlı animasyonlar için güvenlik ağıdır.      */
+/* ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
