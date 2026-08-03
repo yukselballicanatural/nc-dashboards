@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING, STAGGER } from "@/lib/motion";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
@@ -17,19 +19,20 @@ import { HoverTip } from "@/components/ui/HoverTip";
 export function TeamFunnelChart() {
   const reduced = usePrefersReducedMotion();
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const stages = data.funnel;
   const max = Math.max(...stages.map((s) => s.total), 1);
 
   return (
     <Card className="flex h-full flex-col gap-4">
-      <SectionTitle hint="Lead'den ödemeye takımın tüm yolculuğu. Üstüne gelince en çok katkı veren agent'ları görürsün.">
-        {`Takım Funnel'ı (Seçili Dönem)`}
+      <SectionTitle hint={t("Lead'den ödemeye takımın tüm yolculuğu. Üstüne gelince en çok katkı veren agent'ları görürsün.", "The team's whole journey from lead to payment. Hover to see which agents contribute most.")}>
+        <T tr="Takım Funnel'ı (Seçili Dönem)" en="Team Funnel (Selected Period)" />
       </SectionTitle>
 
       <div className="flex items-center gap-3 font-body text-[10px] uppercase tracking-wide text-fg-muted">
-        <span className="w-32 shrink-0">Aşama</span>
+        <span className="w-32 shrink-0"><T tr="Aşama" en="Stage" /></span>
         <span className="flex-1" />
-        <span className="w-14 shrink-0 text-right">Önceki %</span>
+        <span className="w-14 shrink-0 text-right"><T tr="Önceki %" en="Prev %" /></span>
       </div>
 
       <ul className="flex flex-1 flex-col justify-center gap-2">
@@ -70,8 +73,8 @@ export function TeamFunnelChart() {
                   </p>
                   <p className="mb-1 font-mono text-[11px] text-fg-muted">
                     {stage.prevPct !== null
-                      ? `Önceki aşamadan %${Math.round(stage.prevPct)} geçiş`
-                      : "Funnel'ın başı"}
+                      ? t(`Önceki aşamadan %${Math.round(stage.prevPct)} geçiş`, `${Math.round(stage.prevPct)}% pass-through from previous stage`)
+                      : t("Funnel'ın başı", "Start of the funnel")}
                   </p>
                   {topAgents.length > 0 && (
                     <div className="flex flex-col gap-0.5 border-t border-border pt-1">

@@ -10,6 +10,7 @@
  */
 
 import type { Kpi, PacePoint } from "@/lib/types/agent-data";
+import { pick, type Lang } from "@/lib/i18n/core";
 import { DAY } from "./lead-engine";
 import { MONTHLY_TARGET_EUR } from "./datasets";
 import { TEAM_AGENTS } from "./team-data";
@@ -39,13 +40,15 @@ const teamForecastEUR = Math.round(
 );
 const teamMonthlyPct = (totalMonthlySalesEUR / teamTargetEUR) * 100;
 
-export const TEAM_MONTHLY_KPIS: Kpi[] = [
-  { id: "team-target", label: "Takım Aylık Hedefi", format: "currency", value: teamTargetEUR, accent: "brand-secondary", icon: "target", hint: `${TEAM_AGENTS.length} agent × aylık hedef` },
-  { id: "team-actual", label: "Bu Ay Gerçekleşen Satış", format: "currency", value: totalMonthlySalesEUR, accent: "brand", icon: "banknote", hint: "ödemesi alınan deal'ler" },
-  { id: "team-rate", label: "Hedef Gerçekleşme", format: "percent", value: Math.round(teamMonthlyPct * 10) / 10, accent: "brand", icon: "percent", hint: "gerçekleşen ÷ takım hedefi" },
-  { id: "team-won", label: "Bu Ay Won Deal", format: "number", value: totalWonDealsMonth, accent: "violet", icon: "handshake", hint: "takım genelinde kapanan satış" },
-  { id: "team-forecast", label: "Tahmini Ay Sonu", format: "currency", value: teamForecastEUR, accent: "brand-secondary", icon: "trending-up", hint: "mevcut tempoyla projeksiyon" },
-];
+export function teamMonthlyKpis(lang: Lang = "tr"): Kpi[] {
+  return [
+    { id: "team-target", label: pick(lang, "Takım Aylık Hedefi", "Team Monthly Target"), format: "currency", value: teamTargetEUR, accent: "brand-secondary", icon: "target", hint: pick(lang, `${TEAM_AGENTS.length} agent × aylık hedef`, `${TEAM_AGENTS.length} agents × monthly target`) },
+    { id: "team-actual", label: pick(lang, "Bu Ay Gerçekleşen Satış", "This Month's Actual Sales"), format: "currency", value: totalMonthlySalesEUR, accent: "brand", icon: "banknote", hint: pick(lang, "ödemesi alınan deal'ler", "deals with payment received") },
+    { id: "team-rate", label: pick(lang, "Hedef Gerçekleşme", "Target Achievement"), format: "percent", value: Math.round(teamMonthlyPct * 10) / 10, accent: "brand", icon: "percent", hint: pick(lang, "gerçekleşen ÷ takım hedefi", "actual ÷ team target") },
+    { id: "team-won", label: pick(lang, "Bu Ay Won Deal", "This Month's Won Deals"), format: "number", value: totalWonDealsMonth, accent: "violet", icon: "handshake", hint: pick(lang, "takım genelinde kapanan satış", "deals closed across the team") },
+    { id: "team-forecast", label: pick(lang, "Tahmini Ay Sonu", "Projected Month-End"), format: "currency", value: teamForecastEUR, accent: "brand-secondary", icon: "trending-up", hint: pick(lang, "mevcut tempoyla projeksiyon", "projection at current pace") },
+  ];
+}
 
 export const TEAM_MONTHLY_PACE: PacePoint[] = (() => {
   const points: PacePoint[] = [];
@@ -102,12 +105,14 @@ const totalLateMinutes = TEAM_SHIFT_ROWS.reduce((s, r) => s + r.lateMinutesTotal
 const avgCompliancePct =
   TEAM_SHIFT_ROWS.reduce((s, r) => s + r.compliancePct, 0) / TEAM_SHIFT_ROWS.length;
 
-export const TEAM_SHIFT_KPIS: Kpi[] = [
-  { id: "team-deficit", label: "Bu Hafta Eksik Çalışma", format: "number", value: Math.round(totalDeficitHours * 10) / 10, accent: "brand-secondary", status: totalDeficitHours > 20 ? "risk" : "success", icon: "timer", hint: "saat, takım toplamı (planlanan 8 sa/gün net)" },
-  { id: "team-compliance", label: "Ortalama Vardiya Uyumu", format: "percent", value: Math.round(avgCompliancePct * 10) / 10, accent: "indigo", icon: "clock", hint: "≤5 dk gecikme = uyumlu" },
-  { id: "team-late", label: "Toplam Geç Kalma", format: "number", value: totalLateMinutes, accent: "brand-secondary", status: totalLateMinutes > 200 ? "risk" : "success", icon: "alert", hint: "dakika, takım toplamı (7 gün)" },
-  { id: "team-agents", label: "Aktif Agent", format: "number", value: TEAM_AGENTS.length, accent: "brand", icon: "users", hint: "takımdaki toplam agent sayısı" },
-];
+export function teamShiftKpis(lang: Lang = "tr"): Kpi[] {
+  return [
+    { id: "team-deficit", label: pick(lang, "Bu Hafta Eksik Çalışma", "This Week's Shortfall"), format: "number", value: Math.round(totalDeficitHours * 10) / 10, accent: "brand-secondary", status: totalDeficitHours > 20 ? "risk" : "success", icon: "timer", hint: pick(lang, "saat, takım toplamı (planlanan 8 sa/gün net)", "hours, team total (planned 8 net hrs/day)") },
+    { id: "team-compliance", label: pick(lang, "Ortalama Vardiya Uyumu", "Average Shift Compliance"), format: "percent", value: Math.round(avgCompliancePct * 10) / 10, accent: "indigo", icon: "clock", hint: pick(lang, "≤5 dk gecikme = uyumlu", "≤5 min late = compliant") },
+    { id: "team-late", label: pick(lang, "Toplam Geç Kalma", "Total Lateness"), format: "number", value: totalLateMinutes, accent: "brand-secondary", status: totalLateMinutes > 200 ? "risk" : "success", icon: "alert", hint: pick(lang, "dakika, takım toplamı (7 gün)", "minutes, team total (7 days)") },
+    { id: "team-agents", label: pick(lang, "Aktif Agent", "Active Agents"), format: "number", value: TEAM_AGENTS.length, accent: "brand", icon: "users", hint: pick(lang, "takımdaki toplam agent sayısı", "total agents on the team") },
+  ];
+}
 
 /* ------------------------------------------------------------------ */
 /* KALİTE — son 30 gün, agent bazlı ortalama                           */
@@ -134,8 +139,10 @@ export const TEAM_QUALITY_ROWS: TeamQualityRow[] = TEAM_SHIFT_QUALITY.map((agent
 const teamAvgQuality =
   TEAM_QUALITY_ROWS.reduce((s, r) => s + r.avgQuality, 0) / TEAM_QUALITY_ROWS.length;
 
-export const TEAM_QUALITY_KPIS: Kpi[] = [
-  { id: "team-quality-avg", label: "Takım Ortalama Kalite", format: "number", value: Math.round(teamAvgQuality * 10) / 10, accent: "violet", icon: "star", hint: "son 30 gün, 12 agent ortalaması" },
-  { id: "team-quality-best", label: "En Yüksek Kalite", format: "number", value: TEAM_QUALITY_ROWS[0]?.avgQuality ?? 0, accent: "violet", icon: "badge-check", hint: TEAM_QUALITY_ROWS[0]?.name ?? "—" },
-  { id: "team-quality-worst", label: "En Düşük Kalite", format: "number", value: TEAM_QUALITY_ROWS[TEAM_QUALITY_ROWS.length - 1]?.avgQuality ?? 0, accent: "brand-secondary", status: "risk", icon: "alert", hint: TEAM_QUALITY_ROWS[TEAM_QUALITY_ROWS.length - 1]?.name ?? "—" },
-];
+export function teamQualityKpis(lang: Lang = "tr"): Kpi[] {
+  return [
+    { id: "team-quality-avg", label: pick(lang, "Takım Ortalama Kalite", "Team Average Quality"), format: "number", value: Math.round(teamAvgQuality * 10) / 10, accent: "violet", icon: "star", hint: pick(lang, "son 30 gün, 12 agent ortalaması", "last 30 days, average of 12 agents") },
+    { id: "team-quality-best", label: pick(lang, "En Yüksek Kalite", "Highest Quality"), format: "number", value: TEAM_QUALITY_ROWS[0]?.avgQuality ?? 0, accent: "violet", icon: "badge-check", hint: TEAM_QUALITY_ROWS[0]?.name ?? "—" },
+    { id: "team-quality-worst", label: pick(lang, "En Düşük Kalite", "Lowest Quality"), format: "number", value: TEAM_QUALITY_ROWS[TEAM_QUALITY_ROWS.length - 1]?.avgQuality ?? 0, accent: "brand-secondary", status: "risk", icon: "alert", hint: TEAM_QUALITY_ROWS[TEAM_QUALITY_ROWS.length - 1]?.name ?? "—" },
+  ];
+}

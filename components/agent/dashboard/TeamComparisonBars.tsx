@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TEAM_COMPARISON } from "@/lib/mock/mock-data";
+import { teamComparison } from "@/lib/mock/mock-data";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import type { ComparisonMetric } from "@/lib/types/agent-data";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING } from "@/lib/motion";
@@ -64,7 +66,19 @@ function Bar({
   );
 }
 
-function MetricRow({ metric }: { metric: ComparisonMetric }) {
+function MetricRow({
+  metric,
+  youLabel,
+  teamLabel,
+  teamFullLabel,
+  pointLabel,
+}: {
+  metric: ComparisonMetric;
+  youLabel: string;
+  teamLabel: string;
+  teamFullLabel: string;
+  pointLabel: string;
+}) {
   const delta = metric.minePct - metric.teamPct;
   const positive = delta >= 0;
 
@@ -81,27 +95,40 @@ function MetricRow({ metric }: { metric: ComparisonMetric }) {
           )}
         >
           {positive ? "+" : "−"}
-          {formatNumber(Math.abs(delta), 1)} puan
+          {formatNumber(Math.abs(delta), 1)} {pointLabel}
         </span>
       </div>
-      <Bar label="Sen" pct={metric.minePct} fillClass="bg-brand" tipLabel="Sen" />
+      <Bar label={youLabel} pct={metric.minePct} fillClass="bg-brand" tipLabel={youLabel} />
       <Bar
-        label="Takım Ort."
+        label={teamLabel}
         pct={metric.teamPct}
         fillClass="bg-neutral"
-        tipLabel="Takım Ortalaması"
+        tipLabel={teamFullLabel}
       />
     </div>
   );
 }
 
 export function TeamComparisonBars() {
+  const { t, lang } = useLang();
+  const youLabel = t("Sen", "You");
+  const teamLabel = t("Takım Ort.", "Team Avg.");
+  const teamFullLabel = t("Takım Ortalaması", "Team Average");
+  const pointLabel = t("puan", "pts");
+
   return (
     <Card className="flex flex-col gap-5">
-      <SectionTitle>Takım Ortalamana Göre Durumun</SectionTitle>
+      <SectionTitle><T tr="Takım Ortalamana Göre Durumun" en="Your Standing vs. Team Average" /></SectionTitle>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-10">
-        {TEAM_COMPARISON.map((metric) => (
-          <MetricRow key={metric.key} metric={metric} />
+        {teamComparison(lang).map((metric) => (
+          <MetricRow
+            key={metric.key}
+            metric={metric}
+            youLabel={youLabel}
+            teamLabel={teamLabel}
+            teamFullLabel={teamFullLabel}
+            pointLabel={pointLabel}
+          />
         ))}
       </div>
     </Card>

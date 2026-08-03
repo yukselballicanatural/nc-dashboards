@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { T } from "@/components/i18n/T";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
 import { RegionHeroHeader } from "@/components/region-manager/dashboard/RegionHeroHeader";
 import { RegionInsightStrip } from "@/components/region-manager/dashboard/RegionInsightStrip";
@@ -28,7 +29,7 @@ export default function RegionManagerOverviewPage() {
       <RegionHeroHeader />
       <RegionInsightStrip />
 
-      <DashboardSection id="ozet" eyebrow="Genel Bakış" title="Bölgenin Seçili Dönem Özeti">
+      <DashboardSection id="ozet" eyebrow={<T tr="Genel Bakış" en="Overview" />} title={<T tr="Bölgenin Seçili Dönem Özeti" en="Region's Overview for the Selected Period" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
           <RegionKpiGrid />
           <RegionConversionKpis />
@@ -51,7 +52,7 @@ export default function RegionManagerOverviewPage() {
         </div>
       </DashboardSection>
 
-      <DashboardSection id="katki" eyebrow="Takım Katkısı" title="Ciro Payı, Yetenek ve Verimlilik">
+      <DashboardSection id="katki" eyebrow={<T tr="Takım Katkısı" en="Team Contribution" />} title={<T tr="Ciro Payı, Yetenek ve Verimlilik" en="Revenue Share, Talent and Efficiency" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
             <div className="lg:col-span-7">
@@ -65,7 +66,7 @@ export default function RegionManagerOverviewPage() {
         </div>
       </DashboardSection>
 
-      <DashboardSection id="bu-ay" eyebrow="Bu Ay" title="Bölge Satış ve Hedef Durumu">
+      <DashboardSection id="bu-ay" eyebrow={<T tr="Bu Ay" en="This Month" />} title={<T tr="Bölge Satış ve Hedef Durumu" en="Region Sales and Target Status" />}>
         <RegionMonthlySection />
       </DashboardSection>
     </div>

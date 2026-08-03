@@ -1,12 +1,15 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useRegionDateRange } from "@/components/region-manager/filters/RegionDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import type { ConversionRow } from "@/lib/types/agent-data";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 
-function MiniTable({ title, rows }: { title: string; rows: ConversionRow[] }) {
+function MiniTable({ title, rows }: { title: ReactNode; rows: ConversionRow[] }) {
   const bestRate = Math.max(0, ...rows.map((r) => r.ratePct));
   return (
     <div className="flex flex-col gap-2">
@@ -14,10 +17,10 @@ function MiniTable({ title, rows }: { title: string; rows: ConversionRow[] }) {
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b border-border">
-            <th className="py-1.5 pr-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Grup</th>
+            <th className="py-1.5 pr-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"><T tr="Grup" en="Group" /></th>
             <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Lead</th>
             <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Deal</th>
-            <th className="py-1.5 pl-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Oran</th>
+            <th className="py-1.5 pl-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"><T tr="Oran" en="Rate" /></th>
           </tr>
         </thead>
         <tbody>
@@ -42,15 +45,16 @@ function MiniTable({ title, rows }: { title: string; rows: ConversionRow[] }) {
 /** Bölge geneli kaynak / ülke / dil dönüşüm tabloları. */
 export function RegionConversionTables() {
   const { data } = useRegionDateRange();
+  const { t } = useLang();
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Bölge hangi kaynak, ülke ve dilde daha iyi satışa dönüyor? Yeşil rozet en verimli grup — pazarlama/bütçe kararları için.">
-        Bölge Dönüşüm Kırılımları
+      <SectionTitle hint={t("Bölge hangi kaynak, ülke ve dilde daha iyi satışa dönüyor? Yeşil rozet en verimli grup — pazarlama/bütçe kararları için.", "Which source, country and language convert better across the region? The green badge marks the most productive group — for marketing/budget decisions.")}>
+        <T tr="Bölge Dönüşüm Kırılımları" en="Region Conversion Breakdowns" />
       </SectionTitle>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <MiniTable title="Lead Source" rows={data.sourceConversion} />
-        <MiniTable title="Ülke" rows={data.countryConversion} />
-        <MiniTable title="Dil" rows={data.languageConversion} />
+        <MiniTable title={<T tr="Ülke" en="Country" />} rows={data.countryConversion} />
+        <MiniTable title={<T tr="Dil" en="Language" />} rows={data.languageConversion} />
       </div>
     </Card>
   );

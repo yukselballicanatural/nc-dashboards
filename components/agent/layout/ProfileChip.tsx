@@ -29,8 +29,10 @@ interface ProfileChipProfile {
 
 export function ProfileChip({
   profile = AGENT_PROFILE,
+  collapsed = false,
 }: {
   profile?: ProfileChipProfile;
+  collapsed?: boolean;
 } = {}) {
   // Oturum kimliği varsa onu göster (oluşturulan kullanıcı kendi adıyla görünür),
   // yoksa panelin varsayılan profili.
@@ -73,7 +75,8 @@ export function ProfileChip({
         aria-label={t("Profil menüsü", "Profile menu")}
         aria-expanded={open}
         className={cn(
-          "flex items-center gap-3 rounded-pill border py-1.5 pl-2 pr-4 shadow-soft transition-colors",
+          "flex items-center gap-3 rounded-pill border shadow-soft transition-colors",
+          collapsed ? "justify-center p-1.5" : "py-1.5 pl-2 pr-4",
           open ? "border-brand/40 bg-brand/8" : "border-border bg-surface hover:bg-elevated",
         )}
       >
@@ -88,19 +91,21 @@ export function ProfileChip({
             className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-pill border-2 border-surface bg-success"
           />
         </div>
-        <div className="hidden flex-col items-start sm:flex">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-[13px] font-semibold leading-tight text-fg">
-              {AGENT.name}
-            </span>
-            <span className="rounded-pill bg-brand/12 px-2 py-0.5 font-body text-[10.5px] font-medium text-brand">
-              {AGENT.role}
+        {!collapsed && (
+          <div className="hidden flex-col items-start sm:flex">
+            <div className="flex items-center gap-2">
+              <span className="font-display text-[13px] font-semibold leading-tight text-fg">
+                {AGENT.name}
+              </span>
+              <span className="rounded-pill bg-brand/12 px-2 py-0.5 font-body text-[10.5px] font-medium text-brand">
+                {AGENT.role}
+              </span>
+            </div>
+            <span className="font-body text-[11px] leading-tight text-fg-muted">
+              {AGENT.team} · {AGENT.location}
             </span>
           </div>
-          <span className="font-body text-[11px] leading-tight text-fg-muted">
-            {AGENT.team} · {AGENT.location}
-          </span>
-        </div>
+        )}
       </button>
 
       <AnimatePresence>
@@ -112,7 +117,7 @@ export function ProfileChip({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: reduced ? 0 : 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-card border border-border bg-surface shadow-elevated"
+            className="absolute bottom-0 left-full z-50 ml-2 w-64 overflow-hidden rounded-card border border-border bg-surface shadow-elevated"
           >
             <div
               className="flex items-center gap-3 px-4 py-3.5"

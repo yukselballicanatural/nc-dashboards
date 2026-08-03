@@ -1,6 +1,8 @@
 "use client";
 
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { cn } from "@/lib/utils/cn";
@@ -12,6 +14,7 @@ import { cn } from "@/lib/utils/cn";
  */
 export function DailyLeadMatrix() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const rows = data.dailyLeadMatrix;
   const max = Math.max(1, ...rows.flatMap((r) => r.cells.map((c) => c.count)));
   const days = rows[0]?.cells.map((c) => c.day) ?? [];
@@ -27,8 +30,8 @@ export function DailyLeadMatrix() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Son 10 günde her agent'a düşen yeni lead sayısı. Koyu hücre çok lead, açık hücre az lead demek — dağıtım dengesini gösterir.">
-        Günlük Yeni Lead Dağılımı
+      <SectionTitle hint={t("Son 10 günde her agent'a düşen yeni lead sayısı. Koyu hücre çok lead, açık hücre az lead demek — dağıtım dengesini gösterir.", "How many new leads landed on each agent in the last 10 days. Darker cells mean more leads, lighter cells mean fewer — shows the distribution balance.")}>
+        <T tr="Günlük Yeni Lead Dağılımı" en="Daily New Lead Distribution" />
       </SectionTitle>
 
       <div className="overflow-x-auto">
@@ -39,7 +42,7 @@ export function DailyLeadMatrix() {
               {days.map((d) => (
                 <th key={d} className="px-1 py-1.5 text-center font-body text-[9.5px] font-medium text-fg-muted">{d}</th>
               ))}
-              <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Toplam</th>
+              <th className="px-2 py-1.5 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">{t("Toplam", "Total")}</th>
             </tr>
           </thead>
           <tbody>

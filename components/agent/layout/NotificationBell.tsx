@@ -164,7 +164,7 @@ export function NotificationBell() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: reduced ? 0 : 0.16, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-card border border-border bg-surface shadow-elevated"
+              className="absolute left-full top-0 z-50 ml-2 w-80 overflow-hidden rounded-card border border-border bg-surface shadow-elevated"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                 <p className="font-display text-[13.5px] font-semibold text-fg">

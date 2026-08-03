@@ -1,3 +1,7 @@
+"use client";
+
+import { useLang } from "@/components/i18n/LanguageProvider";
+
 /**
  * Temsili agent avatarı — gerçek fotoğraf yerine düz-tasarım karakter
  * illüstrasyonu (baş harflerin boş/beyaz kalmasının önüne geçmek için).
@@ -10,13 +14,14 @@ export function AgentAvatar({
   size?: number;
   className?: string;
 }) {
+  const { t } = useLang();
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 64 64"
       role="img"
-      aria-label="Agent profil avatarı"
+      aria-label={t("Agent profil avatarı", "Agent profile avatar")}
       className={className}
     >
       <defs>

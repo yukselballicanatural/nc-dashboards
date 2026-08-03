@@ -2,21 +2,24 @@
 
 import type { StatusLevel } from "@/lib/types/agent-data";
 import { useRegionDateRange } from "@/components/region-manager/filters/RegionDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { StatusDot } from "@/components/ui/StatusDot";
 
-const GROUP_LABEL: Record<StatusLevel, string> = {
-  critical: "Kritik",
-  risk: "Riskli",
-  warning: "Takip Edilmeli",
-  neutral: "Bilgi",
-  success: "Olumlu",
+const GROUP_LABEL: Record<StatusLevel, { tr: string; en: string }> = {
+  critical: { tr: "Kritik", en: "Critical" },
+  risk: { tr: "Riskli", en: "At Risk" },
+  warning: { tr: "Takip Edilmeli", en: "Needs Follow-up" },
+  neutral: { tr: "Bilgi", en: "Info" },
+  success: { tr: "Olumlu", en: "Positive" },
 };
 
 /** Bölge geneli aksiyon merkezi — önem sırasına göre gruplu. */
 export function RegionActionCenter() {
   const { data } = useRegionDateRange();
+  const { t } = useLang();
   const groups: Partial<Record<StatusLevel, typeof data.actionCenter>> = {};
   for (const item of data.actionCenter) {
     (groups[item.status] ??= []).push(item);
@@ -25,8 +28,8 @@ export function RegionActionCenter() {
 
   return (
     <Card className="flex flex-col gap-5">
-      <SectionTitle hint="Takım liderleriyle konuşman gereken konular — en kritik en üstte.">
-        Aksiyon & Risk Merkezi
+      <SectionTitle hint={t("Takım liderleriyle konuşman gereken konular — en kritik en üstte.", "Topics you need to discuss with team leaders — most critical first.")}>
+        <T tr="Aksiyon & Risk Merkezi" en="Action & Risk Center" />
       </SectionTitle>
 
       {data.actionCenter.length > 0 ? (
@@ -36,7 +39,7 @@ export function RegionActionCenter() {
             .map((status) => (
               <div key={status} className="flex flex-col gap-1.5">
                 <h3 className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
-                  {GROUP_LABEL[status]} · {groups[status]!.length}
+                  {t(GROUP_LABEL[status].tr, GROUP_LABEL[status].en)} · {groups[status]!.length}
                 </h3>
                 <ul className="flex flex-col gap-1">
                   {groups[status]!.map((action) => (
@@ -54,7 +57,7 @@ export function RegionActionCenter() {
         </div>
       ) : (
         <p className="flex flex-1 items-center justify-center py-10 font-body text-sm text-fg-muted">
-          Harika — bölgede bekleyen hiçbir aksiyon yok.
+          <T tr="Harika — bölgede bekleyen hiçbir aksiyon yok." en="Great — there are no pending actions in the region." />
         </p>
       )}
     </Card>

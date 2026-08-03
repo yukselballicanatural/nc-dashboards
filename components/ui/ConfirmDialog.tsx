@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -29,11 +30,14 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmLabel = "Evet, sil",
-  cancelLabel = "Vazgeç",
+  confirmLabel,
+  cancelLabel,
   tone = "critical",
 }: ConfirmDialogProps) {
   const reduced = usePrefersReducedMotion();
+  const { t } = useLang();
+  const resolvedConfirmLabel = confirmLabel ?? t("Evet, sil", "Yes, delete");
+  const resolvedCancelLabel = cancelLabel ?? t("Vazgeç", "Cancel");
 
   useEffect(() => {
     if (!open) return;
@@ -105,7 +109,7 @@ export function ConfirmDialog({
                 onClick={onClose}
                 className="flex h-10 items-center justify-center rounded-control border border-border px-4 font-body text-[13px] font-medium text-fg-secondary transition-colors hover:text-fg"
               >
-                {cancelLabel}
+                {resolvedCancelLabel}
               </button>
               <button
                 type="button"
@@ -119,7 +123,7 @@ export function ConfirmDialog({
                   isCritical ? "bg-critical" : "bg-brand",
                 )}
               >
-                {confirmLabel}
+                {resolvedConfirmLabel}
               </button>
             </div>
           </motion.div>

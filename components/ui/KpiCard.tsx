@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import type { AccentColor, Kpi, KpiDelta } from "@/lib/types/agent-data";
 import { useCountUp } from "@/lib/hooks/useCountUp";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import {
   formatCurrencyEUR,
   formatNumber,
@@ -102,13 +103,14 @@ function formatValue(kpi: Kpi, animated: number): string {
 }
 
 function DeltaBadge({ delta }: { delta: KpiDelta }) {
+  const { t } = useLang();
   const isGood = delta.positiveIsGood ? delta.value >= 0 : delta.value <= 0;
   const isUp = delta.value >= 0;
   const Arrow = isUp ? ArrowUpRight : ArrowDownRight;
 
   return (
     <span
-      title="Önceki döneme göre değişim"
+      title={t("Önceki döneme göre değişim", "Change vs. previous period")}
       className={cn(
         "flex items-center gap-0.5 rounded-pill px-1.5 py-0.5 font-mono text-[11px] font-medium",
         isGood ? "bg-success/12 text-success" : "bg-critical/12 text-critical",

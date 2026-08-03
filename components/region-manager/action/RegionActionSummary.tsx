@@ -3,6 +3,7 @@
 import { AlertOctagon, AlertTriangle, Clock, ListChecks } from "lucide-react";
 import type { StatusLevel } from "@/lib/types/agent-data";
 import { useRegionDateRange } from "@/components/region-manager/filters/RegionDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import { useCountUp } from "@/lib/hooks/useCountUp";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils/cn";
@@ -33,14 +34,15 @@ function CountCard({ icon: Icon, label, value, tone }: { icon: typeof AlertOctag
 /** Bölge aksiyon özet sayaçları — kategori bazlı. */
 export function RegionActionSummary() {
   const { data } = useRegionDateRange();
+  const { t } = useLang();
   const count = (tone: StatusLevel) => data.actionCenter.filter((a) => a.status === tone).length;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-      <CountCard icon={AlertOctagon} label="Kritik" value={count("critical")} tone="critical" />
-      <CountCard icon={AlertTriangle} label="Riskli" value={count("risk")} tone="risk" />
-      <CountCard icon={Clock} label="Takip Edilmeli" value={count("warning")} tone="warning" />
-      <CountCard icon={ListChecks} label="Toplam Uyarı" value={data.actionCenter.length} tone="neutral" />
+      <CountCard icon={AlertOctagon} label={t("Kritik", "Critical")} value={count("critical")} tone="critical" />
+      <CountCard icon={AlertTriangle} label={t("Riskli", "At Risk")} value={count("risk")} tone="risk" />
+      <CountCard icon={Clock} label={t("Takip Edilmeli", "Needs Follow-up")} value={count("warning")} tone="warning" />
+      <CountCard icon={ListChecks} label={t("Toplam Uyarı", "Total Alerts")} value={data.actionCenter.length} tone="neutral" />
     </div>
   );
 }

@@ -21,12 +21,14 @@ import {
   updateUser,
   generatePassword,
   ROLE_LABEL,
+  roleLabel,
   ROLE_ROUTE,
   type UserRole,
   type ManagedUser,
 } from "@/lib/data/user-store";
 import { addLog } from "@/lib/data/log-store";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -71,6 +73,7 @@ const inputCls =
 
 export function UserFormModal({ open, onClose, editing, prefill, onSaved }: UserFormModalProps) {
   const reduced = usePrefersReducedMotion();
+  const { t } = useLang();
 
   // Escape ile kapat + body scroll kilidi.
   useEffect(() => {
@@ -109,7 +112,7 @@ export function UserFormModal({ open, onClose, editing, prefill, onSaved }: User
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label={editing ? "Kullanıcı düzenle" : "Kullanıcı ekle"}
+            aria-label={editing ? t("Kullanıcı düzenle", "Edit user") : t("Kullanıcı ekle", "Add user")}
             initial={reduced ? { opacity: 1 } : { opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
@@ -142,6 +145,7 @@ function UserFormBody({
   onClose: () => void;
   onSaved?: (user: ManagedUser, mode: "create" | "edit") => void;
 }) {
+  const { t, lang } = useLang();
   const isEdit = editing !== null;
   const isGrant = !isEdit && prefill !== null;
   const base = editing ?? prefill;
@@ -159,14 +163,14 @@ function UserFormBody({
     const pwd = generatePassword();
     setPassword(pwd);
     setShowPassword(true);
-    setNotice(`Yeni geçici şifre üretildi: ${pwd}. Kaydedip kullanıcıya iletin.`);
+    setNotice(t(`Yeni geçici şifre üretildi: ${pwd}. Kaydedip kullanıcıya iletin.`, `New temporary password generated: ${pwd}. Save it and share it with the user.`));
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const payload = { name, username, password, team, role };
+      const payload = { name, username, password, team, role, lang };
       if (isEdit && editing) {
         const user = updateUser(editing.id, payload);
         addLog("user-add", `Kullanıcı güncellendi: ${user.name} (@${user.username}) — ${ROLE_LABEL[user.role]}`);
@@ -183,7 +187,7 @@ function UserFormBody({
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kullanıcı kaydedilemedi.");
+      setError(err instanceof Error ? err.message : t("Kullanıcı kaydedilemedi.", "Could not save user."));
     }
   };
 
@@ -197,21 +201,21 @@ function UserFormBody({
           </span>
           <div className="flex flex-col">
             <h2 className="font-display text-[15px] font-semibold text-fg">
-              {isEdit ? "Kullanıcı Düzenle" : isGrant ? "Giriş Yetkisi Ver" : "Yeni Kullanıcı Ekle"}
+              {isEdit ? t("Kullanıcı Düzenle", "Edit User") : isGrant ? t("Giriş Yetkisi Ver", "Grant Login Access") : t("Yeni Kullanıcı Ekle", "Add New User")}
             </h2>
             <p className="font-body text-[11.5px] text-fg-muted">
               {isEdit
-                ? "Bilgileri güncelle veya şifre sıfırla"
+                ? t("Bilgileri güncelle veya şifre sıfırla", "Update details or reset the password")
                 : isGrant
-                  ? "Bu kişiye kullanıcı adı/şifre atayarak giriş hesabı oluştur"
-                  : "Giriş yetkili yeni kullanıcı oluştur"}
+                  ? t("Bu kişiye kullanıcı adı/şifre atayarak giriş hesabı oluştur", "Create a login account for this person with a username/password")
+                  : t("Giriş yetkili yeni kullanıcı oluştur", "Create a new user with login access")}
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Kapat"
+          aria-label={t("Kapat", "Close")}
           className="flex h-8 w-8 items-center justify-center rounded-control text-fg-muted transition-colors hover:bg-elevated hover:text-fg"
         >
           <X size={17} />
@@ -221,23 +225,23 @@ function UserFormBody({
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 px-5 py-4">
         <label className="flex flex-col gap-1.5">
-          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">Ad Soyad</span>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn. Deniz Yılmaz" className={inputCls} autoComplete="off" autoFocus />
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">{t("Ad Soyad", "Full Name")}</span>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Örn. Deniz Yılmaz", "e.g. Deniz Yılmaz")} className={inputCls} autoComplete="off" autoFocus />
         </label>
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">Kullanıcı Adı</span>
+            <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">{t("Kullanıcı Adı", "Username")}</span>
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="deniz.yilmaz" className={cn(inputCls, "font-mono")} autoComplete="off" />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">Şifre</span>
+            <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">{t("Şifre", "Password")}</span>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="en az 4 karakter"
+                placeholder={t("en az 4 karakter", "at least 4 characters")}
                 className={cn(inputCls, "pr-9 font-mono")}
                 autoComplete="off"
               />
@@ -245,7 +249,7 @@ function UserFormBody({
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 tabIndex={-1}
-                aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                aria-label={showPassword ? t("Şifreyi gizle", "Hide password") : t("Şifreyi göster", "Show password")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted transition-colors hover:text-fg"
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -261,17 +265,17 @@ function UserFormBody({
             className="flex w-fit items-center gap-1.5 rounded-control border border-border px-2.5 py-1.5 font-body text-[11.5px] font-medium text-fg-secondary transition-colors hover:border-amber/50 hover:text-amber"
           >
             <KeyRound size={13} />
-            Şifre Sıfırla
+            {t("Şifre Sıfırla", "Reset Password")}
           </button>
         )}
 
         <label className="flex flex-col gap-1.5">
-          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">Takım / Kapsam</span>
-          <input type="text" value={team} onChange={(e) => setTeam(e.target.value)} placeholder="Örn. Aamir Ali Team" className={inputCls} autoComplete="off" />
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">{t("Takım / Kapsam", "Team / Scope")}</span>
+          <input type="text" value={team} onChange={(e) => setTeam(e.target.value)} placeholder={t("Örn. Aamir Ali Team", "e.g. Aamir Ali Team")} className={inputCls} autoComplete="off" />
         </label>
 
         <div className="flex flex-col gap-1.5">
-          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">Rol</span>
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-fg-muted">{t("Rol", "Role")}</span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {ROLE_OPTIONS.map((opt) => {
               const Icon = opt.icon;
@@ -288,13 +292,13 @@ function UserFormBody({
                   )}
                 >
                   <Icon size={15} />
-                  {ROLE_LABEL[opt.value]}
+                  {roleLabel(opt.value, lang)}
                 </button>
               );
             })}
           </div>
           <p className="font-body text-[11px] text-fg-muted">
-            Giriş sonrası panel: <span className="font-mono text-fg-secondary">{ROLE_ROUTE[role]}</span>
+            {t("Giriş sonrası panel:", "Panel after login:")} <span className="font-mono text-fg-secondary">{ROLE_ROUTE[role]}</span>
           </p>
         </div>
 
@@ -317,14 +321,14 @@ function UserFormBody({
             onClick={onClose}
             className="flex h-10 items-center justify-center rounded-control border border-border px-4 font-body text-[13px] font-medium text-fg-secondary transition-colors hover:text-fg"
           >
-            İptal
+            {t("İptal", "Cancel")}
           </button>
           <button
             type="submit"
             className="flex h-10 items-center justify-center gap-2 rounded-control bg-brand px-4 font-body text-[13px] font-semibold text-white shadow-card transition-[filter] hover:brightness-110"
           >
             {isEdit ? <Save size={15} /> : isGrant ? <KeyRound size={15} /> : <UserPlus size={15} />}
-            {isEdit ? "Değişiklikleri Kaydet" : isGrant ? "Giriş Yetkisi Ver" : "Kullanıcı Oluştur"}
+            {isEdit ? t("Değişiklikleri Kaydet", "Save Changes") : isGrant ? t("Giriş Yetkisi Ver", "Grant Login Access") : t("Kullanıcı Oluştur", "Create User")}
           </button>
         </div>
       </form>

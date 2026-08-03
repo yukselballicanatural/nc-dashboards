@@ -13,6 +13,8 @@ import {
 } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { TEAM_MONTHLY_PACE } from "@/lib/mock/team-monthly";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { DURATION } from "@/lib/motion";
 import { formatCurrencyEUR } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
@@ -25,38 +27,45 @@ import { AXIS_TICK, InlineLegend, TooltipFrame } from "@/components/ui/ChartBits
  * hedef temposu). Tarih filtresinden bağımsız — her zaman "bu ay".
  */
 
-function ChartTooltip({ active, payload, label }: TooltipContentProps<ValueType, NameType>) {
-  if (!active || !payload?.length) return null;
-  return (
-    <TooltipFrame
-      title={`${label} Temmuz`}
-      rows={payload
-        .filter((entry) => entry.value != null)
-        .map((entry) => ({
-          label: entry.dataKey === "actualEUR" ? "Gerçekleşen" : "Hedef tempo",
-          value: formatCurrencyEUR(Number(entry.value)),
-          color: entry.dataKey === "actualEUR" ? "var(--brand)" : "var(--neutral)",
-        }))}
-    />
-  );
+function makeChartTooltip(monthLabel: string, actualLabel: string, targetLabel: string) {
+  return function ChartTooltip({ active, payload, label }: TooltipContentProps<ValueType, NameType>) {
+    if (!active || !payload?.length) return null;
+    return (
+      <TooltipFrame
+        title={`${label} ${monthLabel}`}
+        rows={payload
+          .filter((entry) => entry.value != null)
+          .map((entry) => ({
+            label: entry.dataKey === "actualEUR" ? actualLabel : targetLabel,
+            value: formatCurrencyEUR(Number(entry.value)),
+            color: entry.dataKey === "actualEUR" ? "var(--brand)" : "var(--neutral)",
+          }))}
+      />
+    );
+  };
 }
 
 export function TeamMonthlyPaceChart() {
+  const { t } = useLang();
+  const actualLabel = t("Gerçekleşen", "Actual");
+  const targetLabel = t("Hedef tempo", "Target pace");
+  const monthLabel = t("Temmuz", "July");
+  const ChartTooltip = makeChartTooltip(monthLabel, actualLabel, targetLabel);
 
   return (
     <Card className="flex h-full flex-col gap-4">
       <SectionTitle
-        hint="Yeşil barlar takımın ay içindeki birikimli cirosunu; kesikli çizgi takım hedefine eşit tempoda gidilseydi bugün olunması gereken yeri gösterir."
+        hint={t("Yeşil barlar takımın ay içindeki birikimli cirosunu; kesikli çizgi takım hedefine eşit tempoda gidilseydi bugün olunması gereken yeri gösterir.", "The bars show the team's cumulative revenue this month; the dashed line shows where it should be today at an even pace toward the team target.")}
         aside={
           <InlineLegend
             items={[
-              { label: "Gerçekleşen", color: "var(--brand)" },
-              { label: "Hedef tempo", color: "var(--neutral)", dashed: true },
+              { label: actualLabel, color: "var(--brand)" },
+              { label: targetLabel, color: "var(--neutral)", dashed: true },
             ]}
           />
         }
       >
-        Takım Aylık Satış / Hedef İlerleyişi
+        <T tr="Takım Aylık Satış / Hedef İlerleyişi" en="Team Monthly Sales / Target Pace" />
       </SectionTitle>
 
       <div className="h-60 w-full">

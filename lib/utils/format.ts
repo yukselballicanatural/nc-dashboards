@@ -30,6 +30,18 @@ export function formatPercent(value: number, digits = 1): string {
   return `%${formatNumber(value, digits)}`;
 }
 
+/**
+ * Komisyon/prim ORANI — ondalık yalnızca gerekiyorsa gösterilir.
+ * 3 → "%3", 5.5 → "%5,5", 4.6 → "%4,6"
+ *
+ * Neden ayrı bir fonksiyon: prim tablolarındaki oranlar tam sayı olmak zorunda
+ * değil (Q4'te %5,5; Takım Lideri tablosunda %3,5/%4,6/%4,7/%4,9). Sabit 0
+ * basamakla formatlanırsa bu oranlar yuvarlanıp YANLIŞ gösterilir (%5,5 → %6).
+ */
+export function formatRatePct(value: number): string {
+  return formatPercent(value, Number.isInteger(value) ? 0 : 1);
+}
+
 /** 12480 → "12.480 €" */
 export function formatCurrencyEUR(value: number, digits = 0): string {
   return `${formatNumber(value, digits)} €`;

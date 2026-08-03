@@ -1,7 +1,8 @@
 "use client";
 
 import { useDateRange } from "@/components/agent/filters/DateRangeContext";
-import { QUALITY_KPIS, SHIFT_KPIS } from "@/lib/mock/datasets";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { qualityKpis, shiftKpis } from "@/lib/mock/datasets";
 import { KpiGrid } from "./KpiGrid";
 
 /**
@@ -11,6 +12,7 @@ import { KpiGrid } from "./KpiGrid";
  */
 export function OverviewKpiGrid() {
   const { data } = useDateRange();
-  const kpis = [...data.overviewKpis, ...QUALITY_KPIS.slice(0, 1), ...SHIFT_KPIS.slice(0, 1)];
+  const { lang } = useLang();
+  const kpis = [...data.overviewKpis, ...qualityKpis(lang).slice(0, 1), ...shiftKpis(lang).slice(0, 1)];
   return <KpiGrid kpis={kpis} className="lg:grid-cols-4" />;
 }

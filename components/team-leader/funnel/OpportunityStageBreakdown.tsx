@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING, STAGGER } from "@/lib/motion";
 import { formatNumber, formatCurrencyEUR } from "@/lib/utils/format";
@@ -23,19 +25,20 @@ const BAR: Record<string, string> = {
 
 export function OpportunityStageBreakdown() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const reduced = usePrefersReducedMotion();
   const rows = data.oppStages;
   const max = Math.max(1, ...rows.map((r) => r.count));
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Takımın elindeki fırsatların hangi aşamada olduğu — görüşmeden kazanılan satışa. Deal aşamalarında toplam tutar da gösterilir.">
-        Fırsatlar Hangi Statüde?
+      <SectionTitle hint={t("Takımın elindeki fırsatların hangi aşamada olduğu — görüşmeden kazanılan satışa. Deal aşamalarında toplam tutar da gösterilir.", "Which stage the team's opportunities are in — from conversation to won sale. Total amount is also shown for deal stages.")}>
+        <T tr="Fırsatlar Hangi Statüde?" en="Opportunity Stages" />
       </SectionTitle>
 
       {rows.length === 0 ? (
         <p className="py-6 text-center font-body text-[13px] text-fg-muted">
-          Bu dönemde fırsat kaydı yok.
+          <T tr="Bu dönemde fırsat kaydı yok." en="No opportunity records in this period." />
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">

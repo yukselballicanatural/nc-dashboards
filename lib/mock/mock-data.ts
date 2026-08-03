@@ -13,36 +13,39 @@ import type {
   PersonProfile,
   RankInfo,
 } from "@/lib/types/agent-data";
+import type { Lang } from "@/lib/i18n/core";
 
-/* Türetilmiş tüm veri setleri (seed'li motor) */
+/* Türetilmiş tüm veri setleri (seed'li motor).
+ * NOT: Görünür metin taşıyanlar `lang` parametreli FONKSİYONdur (i18n) —
+ * bkz. datasets.ts başındaki not. Salt sayısal/veri setleri sabit kalır. */
 export {
   LEADS,
-  DAILY_KPIS,
+  dailyKpis,
   HOURLY_TODAY,
-  MINI_FUNNEL,
-  ACTION_CENTER,
+  miniFunnel,
+  actionCenterItems,
   HERO_STATS,
-  INSIGHTS,
-  CALL_KPIS_30D,
-  DAILY_TREND_14D,
+  insightsList,
+  callKpis30d,
+  dailyTrend14d,
   HOURLY_REACH_TODAY,
-  SPEED_TO_LEAD,
+  speedToLead,
   CALLBACKS,
-  CALL_GAUGES,
-  FULL_FUNNEL,
+  callGauges,
+  fullFunnel,
   SOURCE_CONVERSION,
   COUNTRY_CONVERSION,
   LANGUAGE_CONVERSION,
   GOAL,
-  TARGET_KPIS,
+  targetKpis,
   TARGET_PACE,
   MONTHLY_TARGET_EUR,
-  QUALITY_TREND,
-  QUALITY_KPIS,
-  SHIFT_WEEK,
-  SHIFT_KPIS,
-  FOLLOW_UP_ROWS,
-  MOCK_DATE_LABEL,
+  qualityTrend,
+  qualityKpis,
+  shiftWeek,
+  shiftKpis,
+  followUpRows,
+  mockDateLabel,
 } from "./datasets";
 
 export { MOCK_NOW } from "./lead-engine";
@@ -68,7 +71,9 @@ export const AGENT_RANK: RankInfo = {
 };
 
 /** "Sen vs Takım" — takım tarafı TL fazında gerçek veriye bağlanacak. */
-export const TEAM_COMPARISON: ComparisonMetric[] = [
-  { key: "connection-rate", label: "Ulaşım Oranı", minePct: 43.0, teamPct: 42.6 },
-  { key: "sla-rate", label: "SLA Uyumlu Rate", minePct: 86.5, teamPct: 76.6 },
-];
+export function teamComparison(lang: Lang = "tr"): ComparisonMetric[] {
+  return [
+    { key: "connection-rate", label: lang === "en" ? "Reach Rate" : "Ulaşım Oranı", minePct: 43.0, teamPct: 42.6 },
+    { key: "sla-rate", label: lang === "en" ? "SLA Compliance Rate" : "SLA Uyumlu Rate", minePct: 86.5, teamPct: 76.6 },
+  ];
+}

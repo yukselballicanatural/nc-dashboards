@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { HoverTip } from "@/components/ui/HoverTip";
@@ -32,6 +34,7 @@ const TONE_BG: Record<string, string> = {
 
 export function HourlyHeatmap() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
 
   const orderedRows = useMemo(() => {
     const byId = new Map(data.heatmap.map((row) => [row.agentId, row]));
@@ -47,8 +50,8 @@ export function HourlyHeatmap() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Renk = o saatteki cevaplanma oranı, koyuluk = arama yoğunluğu. Soluk/boş hücreler o saatte hiç arama yapılmadığını gösterir.">
-        Saatlik Aktivite — Agent × Saat
+      <SectionTitle hint={t("Renk = o saatteki cevaplanma oranı, koyuluk = arama yoğunluğu. Soluk/boş hücreler o saatte hiç arama yapılmadığını gösterir.", "Color = answer rate for that hour, darkness = call volume. Pale/empty cells mean no calls were made in that hour.")}>
+        <T tr="Saatlik Aktivite — Agent × Saat" en="Hourly Activity — Agent × Hour" />
       </SectionTitle>
 
       <div className="overflow-x-auto">
@@ -95,11 +98,11 @@ export function HourlyHeatmap() {
                           </p>
                           {cell.total > 0 ? (
                             <p className="font-mono text-[11px] text-fg-secondary">
-                              {cell.total} arama · {formatPercent(cell.ratePct ?? 0, 0)} cevaplanma
+                              {t(`${cell.total} arama · ${formatPercent(cell.ratePct ?? 0, 0)} cevaplanma`, `${cell.total} calls · ${formatPercent(cell.ratePct ?? 0, 0)} answered`)}
                             </p>
                           ) : (
                             <p className="font-mono text-[11px] text-fg-muted">
-                              Bu saatte arama yok
+                              {t("Bu saatte arama yok", "No calls this hour")}
                             </p>
                           )}
                         </HoverTip>
@@ -114,7 +117,7 @@ export function HourlyHeatmap() {
       </div>
 
       <div className="flex flex-wrap items-center gap-4 border-t border-border pt-3">
-        <span className="font-body text-[11px] text-fg-muted">Cevaplanma oranı:</span>
+        <span className="font-body text-[11px] text-fg-muted">{t("Cevaplanma oranı:", "Answer rate:")}</span>
         {(["success", "warning", "risk", "critical"] as const).map((tone) => (
           <span key={tone} className="flex items-center gap-1.5 font-body text-[11px] text-fg-secondary">
             <span
@@ -129,7 +132,7 @@ export function HourlyHeatmap() {
         ))}
         <span className="flex items-center gap-1.5 font-body text-[11px] text-fg-secondary">
           <span className="h-2.5 w-2.5 rounded-[3px] bg-border" />
-          Arama yok
+          {t("Arama yok", "No calls")}
         </span>
       </div>
     </Card>

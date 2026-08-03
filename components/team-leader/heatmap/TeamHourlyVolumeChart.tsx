@@ -12,6 +12,8 @@ import {
 } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { DURATION } from "@/lib/motion";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -23,43 +25,49 @@ import { AXIS_TICK, InlineLegend, TooltipFrame } from "@/components/ui/ChartBits
  * yoğun" sorusuna cevap verir; vardiya/kapasite planlaması için.
  */
 
-function ChartTooltip({ active, payload, label }: TooltipContentProps<ValueType, NameType>) {
-  if (!active || !payload?.length) return null;
-  return (
-    <TooltipFrame
-      title={`${label}:00`}
-      rows={payload.map((entry) => ({
-        label: entry.dataKey === "total" ? "Toplam" : "Cevaplanan",
-        value: String(entry.value ?? 0),
-        color: entry.dataKey === "total" ? "var(--indigo)" : "var(--brand)",
-      }))}
-    />
-  );
+function makeChartTooltip(totalLabel: string, answeredLabel: string) {
+  return function ChartTooltip({ active, payload, label }: TooltipContentProps<ValueType, NameType>) {
+    if (!active || !payload?.length) return null;
+    return (
+      <TooltipFrame
+        title={`${label}:00`}
+        rows={payload.map((entry) => ({
+          label: entry.dataKey === "total" ? totalLabel : answeredLabel,
+          value: String(entry.value ?? 0),
+          color: entry.dataKey === "total" ? "var(--indigo)" : "var(--brand)",
+        }))}
+      />
+    );
+  };
 }
 
 export function TeamHourlyVolumeChart() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
+  const totalLabel = t("Toplam", "Total");
+  const answeredLabel = t("Cevaplanan", "Answered");
+  const ChartTooltip = makeChartTooltip(totalLabel, answeredLabel);
   const isEmpty = data.hourlyAggregate.every((h) => h.total === 0);
 
   return (
     <Card className="flex flex-col gap-4">
       <SectionTitle
-        hint="Takımın toplam arama hacminin mesai saatlerine (09-18) dağılımı — kapasite ve vardiya planlaması için."
+        hint={t("Takımın toplam arama hacminin mesai saatlerine (09-18) dağılımı — kapasite ve vardiya planlaması için.", "Distribution of the team's total call volume across working hours (09-18) — for capacity and shift planning.")}
         aside={
           <InlineLegend
             items={[
-              { label: "Toplam", color: "var(--indigo)" },
-              { label: "Cevaplanan", color: "var(--brand)" },
+              { label: totalLabel, color: "var(--indigo)" },
+              { label: answeredLabel, color: "var(--brand)" },
             ]}
           />
         }
       >
-        Takım Saatlik Arama Hacmi
+        <T tr="Takım Saatlik Arama Hacmi" en="Team Hourly Call Volume" />
       </SectionTitle>
 
       {isEmpty ? (
         <p className="flex h-40 items-center justify-center font-body text-sm text-fg-muted">
-          Bu aralıkta henüz arama verisi yok.
+          <T tr="Bu aralıkta henüz arama verisi yok." en="No call data yet in this range." />
         </p>
       ) : (
         <div className="h-56 w-full">

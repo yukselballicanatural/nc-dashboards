@@ -1,5 +1,8 @@
+"use client";
+
 import { Clock, Filter, Timer, Lightbulb, type LucideIcon } from "lucide-react";
-import { INSIGHTS } from "@/lib/mock/mock-data";
+import { insightsList } from "@/lib/mock/mock-data";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import type { StatusLevel } from "@/lib/types/agent-data";
 import { cn } from "@/lib/utils/cn";
 
@@ -24,11 +27,13 @@ const TONE: Record<StatusLevel, { bar: string; chip: string }> = {
 };
 
 export function InsightStrip() {
-  if (INSIGHTS.length === 0) return null;
+  const { lang } = useLang();
+  const insights = insightsList(lang);
+  if (insights.length === 0) return null;
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
-      {INSIGHTS.map((insight) => {
+      {insights.map((insight) => {
         const Icon = ICONS[insight.icon] ?? Lightbulb;
         const tone = TONE[insight.tone];
         return (

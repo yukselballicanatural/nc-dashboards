@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { pick } from "@/lib/i18n/core";
 
 /**
  * Yönetilen kullanıcı deposu (localStorage).
@@ -41,12 +42,25 @@ export const ROLE_ROUTE: Record<UserRole, string> = {
   admin: "/admin",
 };
 
+/** Varsayılan (Türkçe) rol etiketleri — dilden bağımsız çağrı yerleri için (ör. log mesajları). */
 export const ROLE_LABEL: Record<UserRole, string> = {
   agent: "Danışman",
   leader: "Takım Lideri",
   region: "Bölge Müdürü",
   admin: "Admin",
 };
+
+const ROLE_LABEL_EN: Record<UserRole, string> = {
+  agent: "Agent",
+  leader: "Team Leader",
+  region: "Region Manager",
+  admin: "Admin",
+};
+
+/** Aktif dile göre rol etiketi — UI'da gösterilecek metin için bunu kullanın. */
+export function roleLabel(role: UserRole, lang: "tr" | "en"): string {
+  return lang === "en" ? ROLE_LABEL_EN[role] : ROLE_LABEL[role];
+}
 
 let cache: { raw: string | null; value: ManagedUser[] } = { raw: null, value: [] };
 const EMPTY: ManagedUser[] = [];
@@ -115,6 +129,8 @@ export interface AddUserInput {
   team: string;
   /** Organizasyondan gelen bir kişiye giriş yetkisi verilirken o kişinin dizin kimliği. */
   sourceId?: string;
+  /** Hata mesajlarının üretileceği dil (varsayılan "tr"). */
+  lang?: "tr" | "en";
 }
 
 /**
@@ -122,23 +138,24 @@ export interface AddUserInput {
  * mevcut kayıtlar dahil). Başarısızsa hata fırlatır.
  */
 export function addUser(input: AddUserInput): ManagedUser {
+  const lang = input.lang ?? "tr";
   const username = input.username.trim().toLocaleLowerCase("tr-TR");
   const password = input.password.trim();
   const name = input.name.trim();
   const team = input.team.trim();
 
   if (!username || !password || !name) {
-    throw new Error("Kullanıcı adı, şifre ve ad-soyad zorunludur.");
+    throw new Error(pick(lang, "Kullanıcı adı, şifre ve ad-soyad zorunludur.", "Username, password and full name are required."));
   }
   if (password.length < 4) {
-    throw new Error("Şifre en az 4 karakter olmalıdır.");
+    throw new Error(pick(lang, "Şifre en az 4 karakter olmalıdır.", "Password must be at least 4 characters."));
   }
   if (RESERVED_USERNAMES.includes(username)) {
-    throw new Error(`"${username}" demo hesabı için ayrılmış bir kullanıcı adı.`);
+    throw new Error(pick(lang, `"${username}" demo hesabı için ayrılmış bir kullanıcı adı.`, `"${username}" is reserved for a demo account.`));
   }
   const existing = readAll();
   if (existing.some((u) => u.username === username)) {
-    throw new Error(`"${username}" kullanıcı adı zaten kullanımda.`);
+    throw new Error(pick(lang, `"${username}" kullanıcı adı zaten kullanımda.`, `"${username}" is already in use.`));
   }
 
   const user: ManagedUser = {
@@ -155,7 +172,7 @@ export function addUser(input: AddUserInput): ManagedUser {
     persist([user, ...existing]);
   } catch (err) {
     console.error("user-store: kullanıcı kaydedilemedi", err);
-    throw new Error("Kullanıcı tarayıcı deposuna kaydedilemedi.");
+    throw new Error(pick(lang, "Kullanıcı tarayıcı deposuna kaydedilemedi.", "Could not save the user to browser storage."));
   }
   return user;
 }
@@ -166,6 +183,8 @@ export interface UpdateUserInput {
   name: string;
   role: UserRole;
   team: string;
+  /** Hata mesajlarının üretileceği dil (varsayılan "tr"). */
+  lang?: "tr" | "en";
 }
 
 /**
@@ -174,27 +193,28 @@ export interface UpdateUserInput {
  * fırlatır.
  */
 export function updateUser(id: string, input: UpdateUserInput): ManagedUser {
+  const lang = input.lang ?? "tr";
   const username = input.username.trim().toLocaleLowerCase("tr-TR");
   const password = input.password.trim();
   const name = input.name.trim();
   const team = input.team.trim();
 
   if (!username || !password || !name) {
-    throw new Error("Kullanıcı adı, şifre ve ad-soyad zorunludur.");
+    throw new Error(pick(lang, "Kullanıcı adı, şifre ve ad-soyad zorunludur.", "Username, password and full name are required."));
   }
   if (password.length < 4) {
-    throw new Error("Şifre en az 4 karakter olmalıdır.");
+    throw new Error(pick(lang, "Şifre en az 4 karakter olmalıdır.", "Password must be at least 4 characters."));
   }
   if (RESERVED_USERNAMES.includes(username)) {
-    throw new Error(`"${username}" demo hesabı için ayrılmış bir kullanıcı adı.`);
+    throw new Error(pick(lang, `"${username}" demo hesabı için ayrılmış bir kullanıcı adı.`, `"${username}" is reserved for a demo account.`));
   }
   const existing = readAll();
   const current = existing.find((u) => u.id === id);
   if (!current) {
-    throw new Error("Güncellenecek kullanıcı bulunamadı.");
+    throw new Error(pick(lang, "Güncellenecek kullanıcı bulunamadı.", "The user to update was not found."));
   }
   if (existing.some((u) => u.id !== id && u.username === username)) {
-    throw new Error(`"${username}" kullanıcı adı zaten kullanımda.`);
+    throw new Error(pick(lang, `"${username}" kullanıcı adı zaten kullanımda.`, `"${username}" is already in use.`));
   }
 
   const updated: ManagedUser = {
@@ -209,7 +229,7 @@ export function updateUser(id: string, input: UpdateUserInput): ManagedUser {
     persist(existing.map((u) => (u.id === id ? updated : u)));
   } catch (err) {
     console.error("user-store: kullanıcı güncellenemedi", err);
-    throw new Error("Kullanıcı güncellenemedi.");
+    throw new Error(pick(lang, "Kullanıcı güncellenemedi.", "Could not update the user."));
   }
   return updated;
 }

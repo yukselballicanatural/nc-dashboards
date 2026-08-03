@@ -1,6 +1,8 @@
 "use client";
 
 import { TEAM_SHIFT_ROWS } from "@/lib/mock/team-monthly";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { formatNumber } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -12,22 +14,32 @@ import { cn } from "@/lib/utils/cn";
  * gerçek çalışma arasındaki farkın haftalık toplamıdır — en yüklü en üstte.
  */
 export function TeamShiftTable() {
+  const { t } = useLang();
+  const HEADERS: Array<[string, string]> = [
+    ["Agent", "Agent"],
+    ["Rol", "Role"],
+    ["Geç Kalma (dk)", "Lateness (min)"],
+    ["Eksik Çalışma (sa)", "Shortfall (hr)"],
+    ["Uyum Oranı", "Compliance Rate"],
+    ["Ort. Mola (dk)", "Avg. Break (min)"],
+  ];
+
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Eksik Çalışma = planlanan 8 sa/gün net çalışma ile gerçekleşen arasındaki haftalık toplam fark. En çok eksiği olan en üstte.">
-        Agent Bazlı Vardiya Özeti (7 Gün)
+      <SectionTitle hint={t("Eksik Çalışma = planlanan 8 sa/gün net çalışma ile gerçekleşen arasındaki haftalık toplam fark. En çok eksiği olan en üstte.", "Shortfall = the weekly total difference between the planned 8 net hrs/day and actual hours worked. Largest shortfall first.")}>
+        <T tr="Agent Bazlı Vardiya Özeti (7 Gün)" en="Shift Summary by Agent (7 Days)" />
       </SectionTitle>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px] border-collapse">
           <thead>
             <tr className="border-b border-border">
-              {["Agent", "Rol", "Geç Kalma (dk)", "Eksik Çalışma (sa)", "Uyum Oranı", "Ort. Mola (dk)"].map((h) => (
+              {HEADERS.map(([tr, en]) => (
                 <th
-                  key={h}
+                  key={tr}
                   className="whitespace-nowrap px-2.5 py-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"
                 >
-                  {h}
+                  {t(tr, en)}
                 </th>
               ))}
             </tr>
@@ -38,16 +50,16 @@ export function TeamShiftTable() {
                 <td className="px-2.5 py-2.5 font-body text-[12.5px] font-medium text-fg">{row.name}</td>
                 <td className="px-2.5 py-2.5 font-mono text-[10.5px] text-fg-muted">{row.role}</td>
                 <td className={cn("px-2.5 py-2.5 font-mono text-[11.5px]", row.lateMinutesTotal > 30 ? "font-semibold text-critical" : "text-fg-secondary")}>
-                  {row.lateMinutesTotal > 0 ? `${row.lateMinutesTotal} dk` : "—"}
+                  {row.lateMinutesTotal > 0 ? `${row.lateMinutesTotal} ${t("dk", "min")}` : "—"}
                 </td>
                 <td className={cn("px-2.5 py-2.5 font-mono text-[11.5px]", row.deficitHours >= 3 ? "font-semibold text-risk" : "text-fg")}>
-                  {formatNumber(row.deficitHours, 1)} sa
+                  {formatNumber(row.deficitHours, 1)} {t("sa", "hr")}
                 </td>
                 <td className="px-2.5 py-2.5 font-mono text-[11.5px] text-fg">
                   %{Math.round(row.compliancePct)}
                 </td>
                 <td className="px-2.5 py-2.5 font-mono text-[11.5px] text-fg-secondary">
-                  {row.avgBreakMinutes} dk
+                  {row.avgBreakMinutes} {t("dk", "min")}
                 </td>
               </tr>
             ))}

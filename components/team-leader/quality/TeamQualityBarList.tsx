@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { TEAM_QUALITY_ROWS } from "@/lib/mock/team-monthly";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING, STAGGER } from "@/lib/motion";
 import { Card } from "@/components/ui/Card";
@@ -12,11 +14,12 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
  */
 export function TeamQualityBarList() {
   const reduced = usePrefersReducedMotion();
+  const { t } = useLang();
 
   return (
     <Card className="flex h-full flex-col gap-4">
-      <SectionTitle hint="Kalite ekibinin çağrı değerlendirme puanlarının (0-100) son 30 gün ortalaması, agent bazlı.">
-        Agent Bazlı Kalite Puanı
+      <SectionTitle hint={t("Kalite ekibinin çağrı değerlendirme puanlarının (0-100) son 30 gün ortalaması, agent bazlı.", "The quality team's call evaluation scores (0-100), 30-day average, by agent.")}>
+        <T tr="Agent Bazlı Kalite Puanı" en="Quality Score by Agent" />
       </SectionTitle>
       <ul className="flex flex-col gap-2">
         {TEAM_QUALITY_ROWS.map((row, index) => (

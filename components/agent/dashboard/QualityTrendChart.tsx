@@ -14,7 +14,9 @@ import type {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { QUALITY_TREND } from "@/lib/mock/mock-data";
+import { qualityTrend } from "@/lib/mock/mock-data";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { DURATION } from "@/lib/motion";
 import { formatNumber } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
@@ -26,46 +28,52 @@ import { AXIS_TICK, InlineLegend, TooltipFrame } from "@/components/ui/ChartBits
  * takım ortalaması (kesikli nötr).
  */
 
-function ChartTooltip({
-  active,
-  payload,
-  label,
-}: TooltipContentProps<ValueType, NameType>) {
-  if (!active || !payload?.length) return null;
-  return (
-    <TooltipFrame
-      title={String(label)}
-      rows={payload.map((entry) => ({
-        label: entry.dataKey === "agent" ? "Sen" : "Takım Ort.",
-        value: formatNumber(Number(entry.value ?? 0), 1),
-        color: entry.dataKey === "agent" ? "var(--violet)" : "var(--neutral)",
-      }))}
-    />
-  );
+function makeChartTooltip(youLabel: string, teamLabel: string) {
+  return function ChartTooltip({
+    active,
+    payload,
+    label,
+  }: TooltipContentProps<ValueType, NameType>) {
+    if (!active || !payload?.length) return null;
+    return (
+      <TooltipFrame
+        title={String(label)}
+        rows={payload.map((entry) => ({
+          label: entry.dataKey === "agent" ? youLabel : teamLabel,
+          value: formatNumber(Number(entry.value ?? 0), 1),
+          color: entry.dataKey === "agent" ? "var(--violet)" : "var(--neutral)",
+        }))}
+      />
+    );
+  };
 }
 
 export function QualityTrendChart() {
+  const { t, lang } = useLang();
+  const youLabel = t("Sen", "You");
+  const teamLabel = t("Takım Ort.", "Team Avg.");
+  const ChartTooltip = makeChartTooltip(youLabel, teamLabel);
 
   return (
     <Card className="flex h-full flex-col gap-4">
       <SectionTitle
-        hint="Kalite ekibinin çağrı değerlendirme puanların (0-100) — kesikli çizgi takım ortalaması."
+        hint={t("Kalite ekibinin çağrı değerlendirme puanların (0-100) — kesikli çizgi takım ortalaması.", "Quality team's call evaluation scores (0-100) — the dashed line is the team average.")}
         aside={
           <InlineLegend
             items={[
-              { label: "Sen", color: "var(--violet)" },
-              { label: "Takım Ort.", color: "var(--neutral)", dashed: true },
+              { label: youLabel, color: "var(--violet)" },
+              { label: teamLabel, color: "var(--neutral)", dashed: true },
             ]}
           />
         }
       >
-        Kalite Puanı Trendi (30 Gün)
+        <T tr="Kalite Puanı Trendi (30 Gün)" en="Quality Score Trend (30 Days)" />
       </SectionTitle>
 
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={QUALITY_TREND}
+            data={qualityTrend(lang)}
             margin={{ top: 6, right: 8, bottom: 0, left: -26 }}
           >
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="var(--border)" />

@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import type { StatusLevel } from "@/lib/types/agent-data";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING, STAGGER } from "@/lib/motion";
@@ -26,6 +28,7 @@ const BAR: Record<StatusLevel, string> = {
 
 export function LossReasonBreakdown() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const reduced = usePrefersReducedMotion();
   const rows = data.lossReasons;
   const max = Math.max(1, ...rows.map((r) => r.count));
@@ -33,13 +36,13 @@ export function LossReasonBreakdown() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Sonuçlanan fırsatların hangi nedenle kapandığı. 'İlgileniyor' hâlâ açık fırsattır; diğerleri kayıp nedenleridir. En çok görülen neden en üstte.">
-        Neden Kaybediyoruz?
+      <SectionTitle hint={t("Sonuçlanan fırsatların hangi nedenle kapandığı. 'İlgileniyor' hâlâ açık fırsattır; diğerleri kayıp nedenleridir. En çok görülen neden en üstte.", "Why resolved opportunities closed. 'Interested' is still an open opportunity; the rest are loss reasons. Most common reason first.")}>
+        <T tr="Neden Kaybediyoruz?" en="Why Are We Losing?" />
       </SectionTitle>
 
       {rows.length === 0 ? (
         <p className="py-6 text-center font-body text-[13px] text-fg-muted">
-          Bu dönemde sonuçlanmış fırsat yok.
+          <T tr="Bu dönemde sonuçlanmış fırsat yok." en="No resolved opportunities in this period." />
         </p>
       ) : (
         <>
@@ -69,9 +72,10 @@ export function LossReasonBreakdown() {
 
           {topLoss && (
             <p className="rounded-control border border-border bg-bg px-3.5 py-2.5 font-body text-[12px] leading-relaxed text-fg-secondary">
-              💡 En çok kayıp <span className="font-semibold text-fg">{topLoss.label}</span> nedeniyle
-              (%{topLoss.pct}). Bu gruptaki lead&apos;lerin görüşme senaryosunu gözden geçirmek dönüşümü
-              en hızlı artıracak alan.
+              💡 {t(
+                `En çok kayıp ${topLoss.label} nedeniyle (%${topLoss.pct}). Bu gruptaki lead'lerin görüşme senaryosunu gözden geçirmek dönüşümü en hızlı artıracak alan.`,
+                `Most losses come from ${topLoss.label} (${topLoss.pct}%). Reviewing the call script for this group is the fastest way to improve conversion.`,
+              )}
             </p>
           )}
         </>

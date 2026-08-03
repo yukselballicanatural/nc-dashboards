@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useDateRange, type RangeKey } from "./DateRangeContext";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -19,20 +20,20 @@ import { cn } from "@/lib/utils/cn";
  * geçişi). Global context'i sürer; seçim tüm sayfalarda kalıcıdır.
  */
 
-const PRESETS: Array<{ key: Exclude<RangeKey, "custom">; label: string }> = [
-  { key: "today", label: "Bugün" },
-  { key: "7d", label: "7 Gün" },
-  { key: "30d", label: "30 Gün" },
-  { key: "90d", label: "90 Gün" },
+const PRESETS: Array<{ key: Exclude<RangeKey, "custom">; labelTr: string; labelEn: string }> = [
+  { key: "today", labelTr: "Bugün", labelEn: "Today" },
+  { key: "7d", labelTr: "7 Gün", labelEn: "7 Days" },
+  { key: "30d", labelTr: "30 Gün", labelEn: "30 Days" },
+  { key: "90d", labelTr: "90 Gün", labelEn: "90 Days" },
 ];
 
 const DAY_MS = 86_400_000;
 
 /** Popover içi hızlı kısayollar — bugünden geriye N gün. */
 const QUICK_SHORTCUTS = [
-  { label: "Son 14 gün", days: 14 },
-  { label: "Son 60 gün", days: 60 },
-  { label: "Bu yıl (YTD)", days: -1 }, // özel işaret: yıl başından bugüne
+  { labelTr: "Son 14 gün", labelEn: "Last 14 days", days: 14 },
+  { labelTr: "Son 60 gün", labelEn: "Last 60 days", days: 60 },
+  { labelTr: "Bu yıl (YTD)", labelEn: "This year (YTD)", days: -1 }, // özel işaret: yıl başından bugüne
 ];
 
 function toInputValue(ts: number): string {
@@ -43,6 +44,7 @@ export function DateRangeFilter() {
   const { rangeKey, customStart, customEnd, setPreset, setCustom, endMs } =
     useDateRange();
   const reduced = usePrefersReducedMotion();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [draftStart, setDraftStart] = useState(customStart);
   const [draftEnd, setDraftEnd] = useState(customEnd);
@@ -108,7 +110,7 @@ export function DateRangeFilter() {
                 : "text-fg-secondary hover:bg-elevated hover:text-fg",
             )}
           >
-            {preset.label}
+            {t(preset.labelTr, preset.labelEn)}
           </button>
         ))}
 
@@ -129,7 +131,7 @@ export function DateRangeFilter() {
           )}
         >
           <Sparkles size={13} />
-          Özel
+          {t("Özel", "Custom")}
           <ChevronDown
             size={12}
             className={cn("transition-transform duration-150", open && "rotate-180")}
@@ -149,7 +151,7 @@ export function DateRangeFilter() {
             <motion.div
               ref={popoverRef}
               role="dialog"
-              aria-label="Özel tarih aralığı seç"
+              aria-label={t("Özel tarih aralığı seç", "Select custom date range")}
               initial={reduced ? { opacity: 1 } : { opacity: 0, y: -8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
@@ -169,13 +171,13 @@ export function DateRangeFilter() {
                     <CalendarRange size={14} />
                   </span>
                   <p className="font-display text-[13.5px] font-semibold text-fg">
-                    Özel Tarih Aralığı
+                    {t("Özel Tarih Aralığı", "Custom Date Range")}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Kapat"
+                  aria-label={t("Kapat", "Close")}
                   className="flex h-6 w-6 items-center justify-center rounded-pill text-fg-muted transition-colors hover:bg-surface hover:text-fg"
                 >
                   <X size={13} />
@@ -187,12 +189,12 @@ export function DateRangeFilter() {
                 <div className="flex flex-wrap gap-1.5">
                   {QUICK_SHORTCUTS.map((shortcut) => (
                     <button
-                      key={shortcut.label}
+                      key={shortcut.days}
                       type="button"
                       onClick={() => applyShortcut(shortcut.days)}
                       className="rounded-pill border border-border bg-elevated px-2.5 py-1 font-body text-[11px] font-medium text-fg-secondary transition-colors hover:border-brand/40 hover:text-brand"
                     >
-                      {shortcut.label}
+                      {t(shortcut.labelTr, shortcut.labelEn)}
                     </button>
                   ))}
                 </div>
@@ -201,7 +203,7 @@ export function DateRangeFilter() {
                 <div className="grid grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1.5">
                     <span className="font-body text-[10.5px] font-semibold uppercase tracking-wide text-fg-muted">
-                      Başlangıç
+                      {t("Başlangıç", "Start")}
                     </span>
                     <input
                       type="date"
@@ -213,7 +215,7 @@ export function DateRangeFilter() {
                   </label>
                   <label className="flex flex-col gap-1.5">
                     <span className="font-body text-[10.5px] font-semibold uppercase tracking-wide text-fg-muted">
-                      Bitiş
+                      {t("Bitiş", "End")}
                     </span>
                     <input
                       type="date"
@@ -235,7 +237,7 @@ export function DateRangeFilter() {
                   )}
                 >
                   <span className="font-body text-[11.5px] text-fg-secondary">
-                    {isValid ? "Seçili aralık" : "Geçersiz aralık"}
+                    {isValid ? t("Seçili aralık", "Selected range") : t("Geçersiz aralık", "Invalid range")}
                   </span>
                   <span
                     className={cn(
@@ -243,7 +245,7 @@ export function DateRangeFilter() {
                       isValid ? "text-brand" : "text-critical",
                     )}
                   >
-                    {isValid ? `${dayCount} gün` : "—"}
+                    {isValid ? `${dayCount} ${t("gün", "days")}` : "—"}
                   </span>
                 </div>
 
@@ -254,7 +256,7 @@ export function DateRangeFilter() {
                   className="flex h-10 items-center justify-center gap-1.5 rounded-control bg-brand font-body text-[12.5px] font-semibold text-white shadow-card transition-[filter,opacity] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Check size={14} />
-                  Aralığı Uygula
+                  {t("Aralığı Uygula", "Apply Range")}
                 </button>
               </div>
             </motion.div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { UserPlus } from "lucide-react";
+import { useLang } from "@/components/i18n/LanguageProvider";
 import { UserDirectory, type GrantTarget } from "@/components/admin/users/UserDirectory";
 import { UserFormModal, type UserPrefill } from "@/components/admin/users/UserFormModal";
 import { generatePassword, type ManagedUser } from "@/lib/data/user-store";
@@ -31,6 +32,7 @@ function slugUsername(name: string): string {
 }
 
 export function UsersManager() {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ManagedUser | null>(null);
   const [prefill, setPrefill] = useState<UserPrefill | null>(null);
@@ -69,7 +71,7 @@ export function UsersManager() {
           className="flex h-10 items-center justify-center gap-2 rounded-control bg-brand px-4 font-body text-[13px] font-semibold text-white shadow-card transition-[filter] hover:brightness-110"
         >
           <UserPlus size={16} />
-          Kullanıcı Ekle
+          {t("Kullanıcı Ekle", "Add User")}
         </button>
       </div>
 

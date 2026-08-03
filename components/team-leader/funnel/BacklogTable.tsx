@@ -1,6 +1,8 @@
 "use client";
 
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { formatNumber } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -13,12 +15,13 @@ import { cn } from "@/lib/utils/cn";
  */
 export function BacklogTable() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const rows = data.backlog;
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Her sütun bir birikim türü. Kırmızı rakamlar acil müdahale gerektirir.">
-        Agent Bazlı Backlog
+      <SectionTitle hint={t("Her sütun bir birikim türü. Kırmızı rakamlar acil müdahale gerektirir.", "Each column is a backlog type. Red numbers require urgent attention.")}>
+        <T tr="Agent Bazlı Backlog" en="Backlog by Agent" />
       </SectionTitle>
 
       {rows.length > 0 ? (
@@ -27,10 +30,10 @@ export function BacklogTable() {
             <thead>
               <tr className="border-b border-border">
                 <th className="px-2.5 py-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Agent</th>
-                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Henüz Aranmayan</th>
-                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">SLA İhlali</th>
-                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Bekleyen Offer</th>
-                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">Gecikmiş Takip</th>
+                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">{t("Henüz Aranmayan", "Not Yet Called")}</th>
+                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">{t("SLA İhlali", "SLA Breach")}</th>
+                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">{t("Bekleyen Offer", "Pending Offers")}</th>
+                <th className="px-2.5 py-2 text-right font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">{t("Gecikmiş Takip", "Overdue Follow-ups")}</th>
               </tr>
             </thead>
             <tbody>
@@ -56,7 +59,7 @@ export function BacklogTable() {
         </div>
       ) : (
         <p className="py-8 text-center font-body text-sm text-fg-muted">
-          Harika — seçili dönemde takımda birikmiş iş yok.
+          <T tr="Harika — seçili dönemde takımda birikmiş iş yok." en="Great — the team has no backlog for the selected period." />
         </p>
       )}
     </Card>

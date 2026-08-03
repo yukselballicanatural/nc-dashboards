@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { PhoneOutgoing, Search } from "lucide-react";
 import { useDateRange } from "@/components/agent/filters/DateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import type { LeadPriority } from "@/lib/types/agent-data";
 import { formatNumber, formatShortDate } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
@@ -15,32 +17,45 @@ import { cn } from "@/lib/utils/cn";
  * sıralı gelir (veri katmanında). Dar ekranda tablo kendi içinde kayar.
  */
 
-const PRIORITY_META: Record<LeadPriority, { label: string; badge: string }> = {
-  "cok-kritik": { label: "Çok Kritik", badge: "bg-critical/12 text-critical" },
-  kritik: { label: "Kritik", badge: "bg-risk/14 text-risk" },
-  yuksek: { label: "Yüksek", badge: "bg-warning/16 text-warning" },
-  orta: { label: "Orta", badge: "bg-indigo/12 text-indigo" },
-  normal: { label: "Normal", badge: "bg-neutral/16 text-fg-secondary" },
+const PRIORITY_META: Record<LeadPriority, { labelTr: string; labelEn: string; badge: string }> = {
+  "cok-kritik": { labelTr: "Çok Kritik", labelEn: "Very Critical", badge: "bg-critical/12 text-critical" },
+  kritik: { labelTr: "Kritik", labelEn: "Critical", badge: "bg-risk/14 text-risk" },
+  yuksek: { labelTr: "Yüksek", labelEn: "High", badge: "bg-warning/16 text-warning" },
+  orta: { labelTr: "Orta", labelEn: "Medium", badge: "bg-indigo/12 text-indigo" },
+  normal: { labelTr: "Normal", labelEn: "Normal", badge: "bg-neutral/16 text-fg-secondary" },
 };
 
-const FILTER_OPTIONS: Array<{ key: LeadPriority | "all"; label: string }> = [
-  { key: "all", label: "Tümü" },
-  { key: "cok-kritik", label: "Çok Kritik" },
-  { key: "kritik", label: "Kritik" },
-  { key: "yuksek", label: "Yüksek" },
-  { key: "orta", label: "Orta" },
-  { key: "normal", label: "Normal" },
+const FILTER_OPTIONS: Array<{ key: LeadPriority | "all"; labelTr: string; labelEn: string }> = [
+  { key: "all", labelTr: "Tümü", labelEn: "All" },
+  { key: "cok-kritik", labelTr: "Çok Kritik", labelEn: "Very Critical" },
+  { key: "kritik", labelTr: "Kritik", labelEn: "Critical" },
+  { key: "yuksek", labelTr: "Yüksek", labelEn: "High" },
+  { key: "orta", labelTr: "Orta", labelEn: "Medium" },
+  { key: "normal", labelTr: "Normal", labelEn: "Normal" },
 ];
 
-const HEADERS = [
-  "Öncelik", "Lead", "Ülke/Dil", "Kaynak", "Oluşturulma", "Son Arama",
-  "Deneme", "Sonuç", "Status", "Due", "Callback", "Offer", "Deal", "Yapılacak İşlem",
+const HEADERS: Array<[string, string]> = [
+  ["Öncelik", "Priority"],
+  ["Lead", "Lead"],
+  ["Ülke/Dil", "Country/Language"],
+  ["Kaynak", "Source"],
+  ["Oluşturulma", "Created"],
+  ["Son Arama", "Last Call"],
+  ["Deneme", "Attempts"],
+  ["Sonuç", "Result"],
+  ["Status", "Status"],
+  ["Due", "Due"],
+  ["Callback", "Callback"],
+  ["Offer", "Offer"],
+  ["Deal", "Deal"],
+  ["Yapılacak İşlem", "Next Action"],
 ];
 
 export function FollowUpTable() {
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<LeadPriority | "all">("all");
   const { data } = useDateRange();
+  const { t } = useLang();
 
   const rows = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr-TR");
@@ -57,8 +72,8 @@ export function FollowUpTable() {
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-        <SectionTitle hint="Aksiyon bekleyen tüm lead'lerin — en acil en üstte. 'Yapılacak İşlem' sana bir sonraki adımı söyler.">
-          Follow-up Listesi
+        <SectionTitle hint={t("Aksiyon bekleyen tüm lead'lerin — en acil en üstte. 'Yapılacak İşlem' sana bir sonraki adımı söyler.", "All leads awaiting action — most urgent first. 'Next Action' tells you the next step.")}>
+          <T tr="Follow-up Listesi" en="Follow-up List" />
         </SectionTitle>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -76,7 +91,7 @@ export function FollowUpTable() {
                     : "text-fg-secondary hover:bg-elevated hover:text-fg",
                 )}
               >
-                {option.label}
+                {t(option.labelTr, option.labelEn)}
               </button>
             ))}
           </div>
@@ -90,8 +105,8 @@ export function FollowUpTable() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="İsim, ID veya telefon..."
-              aria-label="Lead ara"
+              placeholder={t("İsim, ID veya telefon...", "Name, ID or phone...")}
+              aria-label={t("Lead ara", "Search leads")}
               className="h-8 w-full rounded-control border border-border bg-bg pl-8 pr-3 font-body text-[12px] text-fg placeholder:text-fg-muted sm:w-52"
             />
           </div>
@@ -99,20 +114,20 @@ export function FollowUpTable() {
       </div>
 
       <p className="font-mono text-[11px] text-fg-muted">
-        {formatNumber(rows.length)} kayıt gösteriliyor
+        {t(`${formatNumber(rows.length)} kayıt gösteriliyor`, `showing ${formatNumber(rows.length)} records`)}
       </p>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1280px] border-collapse">
           <thead>
             <tr className="border-b border-border">
-              {HEADERS.map((header) => (
+              {HEADERS.map(([tr, en]) => (
                 <th
-                  key={header}
+                  key={tr}
                   scope="col"
                   className="whitespace-nowrap px-2.5 py-2 text-left font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted"
                 >
-                  {header}
+                  {t(tr, en)}
                 </th>
               ))}
             </tr>
@@ -127,7 +142,7 @@ export function FollowUpTable() {
                 >
                   <td className="px-2.5 py-2.5">
                     <span className={cn("inline-block whitespace-nowrap rounded-pill px-2 py-0.5 font-body text-[10px] font-semibold", meta.badge)}>
-                      {meta.label}
+                      {t(meta.labelTr, meta.labelEn)}
                     </span>
                   </td>
                   <td className="px-2.5 py-2.5">
@@ -172,7 +187,7 @@ export function FollowUpTable() {
 
         {rows.length === 0 && (
           <p className="py-10 text-center font-body text-sm text-fg-muted">
-            Seçili filtrelerde kayıt yok — filtreyi genişletmeyi dene.
+            <T tr="Seçili filtrelerde kayıt yok — filtreyi genişletmeyi dene." en="No records match the selected filters — try widening the filter." />
           </p>
         )}
       </div>

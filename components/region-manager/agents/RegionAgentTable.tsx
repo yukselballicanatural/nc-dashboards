@@ -98,15 +98,15 @@ export function RegionAgentTable() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Danışman ara..."
-              aria-label="Danışman ara"
+              placeholder={tr("Danışman ara...", "Search agents...")}
+              aria-label={tr("Danışman ara", "Search agents")}
               className="h-8 w-full rounded-control border border-border bg-bg pl-8 pr-3 font-body text-[12px] text-fg placeholder:text-fg-muted sm:w-44"
             />
           </div>
         </div>
       </div>
 
-      <p className="font-mono text-[11px] text-fg-muted">{formatNumber(rows.length)} danışman gösteriliyor</p>
+      <p className="font-mono text-[11px] text-fg-muted">{tr(`${formatNumber(rows.length)} danışman gösteriliyor`, `showing ${formatNumber(rows.length)} agents`)}</p>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] border-collapse">
@@ -155,7 +155,7 @@ export function RegionAgentTable() {
           </tbody>
         </table>
         {rows.length === 0 && (
-          <p className="py-10 text-center font-body text-sm text-fg-muted">Seçili filtrede danışman yok.</p>
+          <p className="py-10 text-center font-body text-sm text-fg-muted"><T tr="Seçili filtrede danışman yok." en="No agents match the selected filter." /></p>
         )}
       </div>
     </Card>

@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useRegionDateRange } from "@/components/region-manager/filters/RegionDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { DURATION, EASING, STAGGER } from "@/lib/motion";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
@@ -16,19 +18,20 @@ import { HoverTip } from "@/components/ui/HoverTip";
 export function RegionFunnelChart() {
   const reduced = usePrefersReducedMotion();
   const { data } = useRegionDateRange();
+  const { t } = useLang();
   const stages = data.funnel;
   const max = Math.max(...stages.map((s) => s.total), 1);
 
   return (
     <Card className="flex h-full flex-col gap-4">
-      <SectionTitle hint="Bölgenin lead'den ödemeye tüm yolculuğu. Üstüne gelince o aşamaya en çok katkı veren takımları görürsün.">
-        {`Bölge Funnel'ı (Seçili Dönem)`}
+      <SectionTitle hint={t("Bölgenin lead'den ödemeye tüm yolculuğu. Üstüne gelince o aşamaya en çok katkı veren takımları görürsün.", "The region's whole journey from lead to payment. Hover to see which teams contribute most to that stage.")}>
+        <T tr="Bölge Funnel'ı (Seçili Dönem)" en="Region Funnel (Selected Period)" />
       </SectionTitle>
 
       <div className="flex items-center gap-3 font-body text-[10px] uppercase tracking-wide text-fg-muted">
-        <span className="w-32 shrink-0">Aşama</span>
+        <span className="w-32 shrink-0"><T tr="Aşama" en="Stage" /></span>
         <span className="flex-1" />
-        <span className="w-14 shrink-0 text-right">Önceki %</span>
+        <span className="w-14 shrink-0 text-right"><T tr="Önceki %" en="Prev %" /></span>
       </div>
 
       <ul className="flex flex-1 flex-col justify-center gap-2">
@@ -53,13 +56,15 @@ export function RegionFunnelChart() {
                 <HoverTip align="right">
                   <p className="mb-0.5 font-display text-[12px] font-semibold text-fg">{stage.label}</p>
                   <p className="mb-1 font-mono text-[11px] text-fg-muted">
-                    {stage.prevPct !== null ? `Önceki aşamadan %${Math.round(stage.prevPct)} geçiş` : "Funnel'ın başı"}
+                    {stage.prevPct !== null
+                      ? t(`Önceki aşamadan %${Math.round(stage.prevPct)} geçiş`, `${Math.round(stage.prevPct)}% pass-through from previous stage`)
+                      : t("Funnel'ın başı", "Start of the funnel")}
                   </p>
                   {topTeams.length > 0 && (
                     <div className="flex flex-col gap-0.5 border-t border-border pt-1">
-                      {topTeams.map((t) => (
-                        <p key={t.teamId} className="font-mono text-[10.5px] text-fg-secondary">
-                          {t.teamName.replace(" Team", "")}: <span className="text-violet">{t.count}</span>
+                      {topTeams.map((tm) => (
+                        <p key={tm.teamId} className="font-mono text-[10.5px] text-fg-secondary">
+                          {tm.teamName.replace(" Team", "")}: <span className="text-violet">{tm.count}</span>
                         </p>
                       ))}
                     </div>

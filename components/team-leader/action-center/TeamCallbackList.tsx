@@ -15,12 +15,13 @@ import { cn } from "@/lib/utils/cn";
  * işaretli. Kart-liste (tablo değil) — taranabilir olsun diye.
  */
 
-const MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+const MONTHS_TR = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function fmt(iso: string): string {
+function fmt(iso: string, lang: "tr" | "en"): string {
   const d = new Date(iso);
   const day = d.getDate();
-  const mon = MONTHS[d.getMonth()];
+  const mon = (lang === "en" ? MONTHS_EN : MONTHS_TR)[d.getMonth()];
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${day} ${mon} · ${hh}:${mm}`;
@@ -28,7 +29,7 @@ function fmt(iso: string): string {
 
 export function TeamCallbackList() {
   const { data } = useTeamDateRange();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const rows = data.teamCallbacks;
   const overdueCount = rows.filter((r) => r.overdue).length;
 
@@ -67,7 +68,7 @@ export function TeamCallbackList() {
               <div className="flex shrink-0 flex-col items-end">
                 <span className={cn("flex items-center gap-1 font-body text-[11.5px] font-medium", r.overdue ? "text-critical" : "text-fg-secondary")}>
                   <Clock size={11} aria-hidden />
-                  {fmt(r.dateISO)}
+                  {fmt(r.dateISO, lang)}
                 </span>
                 <span className="font-body text-[10.5px] text-fg-muted">{r.agentName}</span>
               </div>

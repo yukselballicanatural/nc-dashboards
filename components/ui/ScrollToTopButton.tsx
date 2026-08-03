@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, Check } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { useLang } from "@/components/i18n/LanguageProvider";
 
 /**
  * Yukarı kaydırma butonu — sayfa belli bir miktar aşağı kaydırılınca belirir.
@@ -23,6 +24,7 @@ export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
   const [justClicked, setJustClicked] = useState(false);
   const reduced = usePrefersReducedMotion();
+  const { t } = useLang();
   const tickingRef = useRef(false);
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -64,8 +66,8 @@ export function ScrollToTopButton() {
         <motion.button
           type="button"
           onClick={handleClick}
-          aria-label="Sayfa başına dön"
-          title="Sayfa başına dön"
+          aria-label={t("Sayfa başına dön", "Scroll to top")}
+          title={t("Sayfa başına dön", "Scroll to top")}
           initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.85 }}
           animate={{
             opacity: 1,

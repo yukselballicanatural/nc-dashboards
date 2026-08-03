@@ -196,6 +196,7 @@ export function summarizeAgent(
     contacts: kpiValue(period.overviewKpis, "contacts"),
     offers: kpiValue(period.overviewKpis, "offers"),
     deals: kpiValue(period.overviewKpis, "deals"),
+    paidDeals: kpiValue(period.overviewKpis, "payments"),
     paymentsEUR: period.paymentsEUR,
     leadToDealPct,
     targetPct: period.targetPct,
@@ -655,10 +656,12 @@ export function computeTeamPeriod(
   });
 
   /* --- Günlük yeni lead matrisi (son 10 gün) — Zoho: Today Lead --- */
-  const MONTHS_S = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+  const MONTHS_TR_S = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+  const MONTHS_EN_S = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const dayLabel = (ts: number) => {
     const iso = new Date(ts + 3 * 3600_000).toISOString();
-    return `${Number(iso.slice(8, 10))} ${MONTHS_S[Number(iso.slice(5, 7)) - 1]}`;
+    const months = lang === "en" ? MONTHS_EN_S : MONTHS_TR_S;
+    return `${Number(iso.slice(8, 10))} ${months[Number(iso.slice(5, 7)) - 1]}`;
   };
   const endDay = Math.min(endMs, MOCK_NOW);
   const dayLabels: string[] = [];

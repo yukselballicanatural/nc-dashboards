@@ -44,6 +44,9 @@
   --shadow-card: 0 12px 32px rgba(14, 169, 139, 0.1);
   --shadow-elevated: 0 18px 44px rgba(14, 169, 139, 0.16);
   --shadow-soft: 0 6px 18px rgba(18, 23, 43, 0.06);
+
+  /* Sol kenar çubuğu genişliği — Sidebar.tsx açık/kapalı state'ine göre günceller */
+  --sidebar-w: 256px;
 }
 
 /* ---------------------------------------------------------------- */

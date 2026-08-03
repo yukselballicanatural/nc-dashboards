@@ -6,9 +6,28 @@ import { cn } from "@/lib/utils/cn";
 /**
  * TR/EN dil geçişi — tema toggle'ının yanında segmentli buton.
  * Aktif dil vurgulu; diğerine tıklayınca anında geçer.
+ * `compact`: kenar çubuğu daraltılmışken segmentli pill yerine tek kare
+ * buton — tıklayınca diğer dile geçer (mevcut dili kısaltma olarak gösterir).
  */
-export function LanguageToggle() {
+export function LanguageToggle({ compact = false }: { compact?: boolean } = {}) {
   const { lang, setLang } = useLang();
+
+  if (compact) {
+    const other = lang === "tr" ? "en" : "tr";
+    const label =
+      lang === "tr" ? "Dili İngilizce yap" : "Switch language to Turkish";
+    return (
+      <button
+        type="button"
+        onClick={() => setLang(other)}
+        aria-label={label}
+        title={label}
+        className="flex h-10 w-10 items-center justify-center rounded-control border border-border bg-surface font-body text-[12px] font-semibold uppercase tracking-wide text-fg-secondary shadow-soft transition-colors hover:text-brand"
+      >
+        {lang}
+      </button>
+    );
+  }
 
   return (
     <div

@@ -1,6 +1,8 @@
 "use client";
 
 import { useTeamDateRange } from "@/components/team-leader/filters/TeamDateRangeContext";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { T } from "@/components/i18n/T";
 import type { StatusLevel } from "@/lib/types/agent-data";
 import { formatNumber } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
@@ -30,21 +32,30 @@ function toneOf(pct: number): StatusLevel {
 
 export function CallRealizationTable() {
   const { data } = useTeamDateRange();
+  const { t } = useLang();
   const rows = data.callRealization;
+  const HEADERS: Array<[string, string]> = [
+    ["Agent", "Agent"],
+    ["Arama", "Calls"],
+    ["Hedef", "Target"],
+    ["Gerçekleşme", "Achievement"],
+    ["Konuşma (dk)", "Talk time (min)"],
+    ["Süre Gerç.", "Duration Ach."],
+  ];
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="Her agent'ın arama adedi ve toplam konuşma süresi, kendi dönem hedefine göre gerçekleşme oranı. %100 hedefe ulaşıldı demektir. En düşük gerçekleşen en üstte.">
-        Arama Hedefi Gerçekleşme
+      <SectionTitle hint={t("Her agent'ın arama adedi ve toplam konuşma süresi, kendi dönem hedefine göre gerçekleşme oranı. %100 hedefe ulaşıldı demektir. En düşük gerçekleşen en üstte.", "Each agent's call count and total talk time, as an achievement rate against their period target. 100% means the target was met. Lowest achievement first.")}>
+        <T tr="Arama Hedefi Gerçekleşme" en="Call Target Achievement" />
       </SectionTitle>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] border-collapse">
           <thead>
             <tr className="border-b border-border">
-              {["Agent", "Arama", "Hedef", "Gerçekleşme", "Konuşma (dk)", "Süre Gerç."].map((h, i) => (
-                <th key={h} className={cn("px-2.5 py-2 font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted", i === 0 ? "text-left" : "text-right")}>
-                  {h}
+              {HEADERS.map(([tr, en], i) => (
+                <th key={tr} className={cn("px-2.5 py-2 font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted", i === 0 ? "text-left" : "text-right")}>
+                  {t(tr, en)}
                 </th>
               ))}
             </tr>

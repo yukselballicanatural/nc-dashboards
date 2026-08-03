@@ -2,8 +2,8 @@
 
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import { TEAM_LEADER_PROFILE } from "@/lib/mock/team-leader-profile";
-import { MOCK_DATE_LABEL } from "@/lib/mock/mock-data";
 import { TEAM_AGENTS } from "@/lib/mock/team-data";
+import { mockDateLabel } from "@/lib/mock/mock-data";
 import { useIdentity } from "@/lib/data/session-store";
 import { T } from "@/components/i18n/T";
 import { useLang } from "@/components/i18n/LanguageProvider";
@@ -50,7 +50,7 @@ const HERO_BG: React.CSSProperties = {
 export function TeamHeroHeader() {
   const identity = useIdentity(TEAM_LEADER_PROFILE);
   const firstName = identity.name.split(" ")[0];
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { data } = useTeamDateRange();
   const teamAvgScore =
     data.agents.reduce((s, a) => s + a.score, 0) / Math.max(data.agents.length, 1);
@@ -68,7 +68,7 @@ export function TeamHeroHeader() {
             </h1>
             <p className="flex items-center gap-1.5 font-body text-[12.5px] text-white/75">
               <CalendarDays size={13} aria-hidden />
-              {MOCK_DATE_LABEL}
+              {mockDateLabel(lang)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">

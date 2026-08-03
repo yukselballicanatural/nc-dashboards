@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Kök sayfa → tek sayfalık Agent dashboard'una yönlendirir. */
+/** Kök sayfa → önce giriş ekranına yönlendirir. */
 export default function RootPage() {
-  redirect("/agent");
+  redirect("/login");
 }

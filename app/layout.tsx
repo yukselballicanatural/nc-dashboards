@@ -3,6 +3,7 @@ import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/goog
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { SidebarProvider } from "@/components/layout/SidebarProvider";
 
 // Başlıklar / display — CLAUDE.md 3.2 (600-700)
 const spaceGrotesk = Space_Grotesk({
@@ -49,7 +50,9 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <ThemeProvider>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

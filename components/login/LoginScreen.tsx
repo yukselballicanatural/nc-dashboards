@@ -19,7 +19,8 @@ import { Eye, EyeOff, Lock, User, ArrowRight, Loader2, ShieldCheck } from "lucid
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { cn } from "@/lib/utils/cn";
 import { SmokeyBackground } from "@/components/ui/SmokeyBackground";
-import { findManagedUser, ROLE_ROUTE, ROLE_LABEL } from "@/lib/data/user-store";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { findManagedUser, ROLE_ROUTE, roleLabel } from "@/lib/data/user-store";
 import { setSessionUser } from "@/lib/data/session-store";
 import { AGENT_PROFILE } from "@/lib/mock/mock-data";
 import { TEAM_LEADER_PROFILE } from "@/lib/mock/team-leader-profile";
@@ -40,8 +41,38 @@ const DEMO_ACCOUNTS: Record<string, DemoAccount> = {
   admin: { route: "/admin", identity: ADMIN_PROFILE },
 };
 
+function LoginLanguageToggle() {
+  const { lang, setLang } = useLang();
+  return (
+    <div
+      role="group"
+      aria-label={lang === "tr" ? "Dil seçimi" : "Language selection"}
+      className="flex h-9 items-center rounded-control border border-white/15 bg-white/8 p-0.5 backdrop-blur"
+    >
+      {(["tr", "en"] as const).map((code) => {
+        const active = lang === code;
+        return (
+          <button
+            key={code}
+            type="button"
+            onClick={() => setLang(code)}
+            aria-pressed={active}
+            className={cn(
+              "flex h-full min-w-8 items-center justify-center rounded-[7px] px-2 font-body text-[11px] font-semibold uppercase tracking-wide transition-colors",
+              active ? "bg-brand text-white" : "text-white/55 hover:text-white",
+            )}
+          >
+            {code}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function LoginScreen() {
   const router = useRouter();
+  const { t, lang } = useLang();
   const reduced = usePrefersReducedMotion();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +101,7 @@ export function LoginScreen() {
         if (managed) {
           setSessionUser({
             name: managed.name,
-            role: ROLE_LABEL[managed.role],
+            role: roleLabel(managed.role, lang),
             team: managed.team,
             location: "İstanbul",
           });
@@ -78,11 +109,11 @@ export function LoginScreen() {
           return;
         }
         setSubmitting(false);
-        setError("Kullanıcı adı veya şifre hatalı.");
+        setError(t("Kullanıcı adı veya şifre hatalı.", "Incorrect username or password."));
         setShakeKey((k) => k + 1);
       }, 550);
     },
-    [submitting, username, password, router],
+    [submitting, username, password, router, t, lang],
   );
 
   return (
@@ -114,6 +145,9 @@ export function LoginScreen() {
       />
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
+        <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+          <LoginLanguageToggle />
+        </div>
         <motion.div
           key={shakeKey}
           animate={error && !reduced ? { x: [0, -10, 9, -7, 5, -3, 0] } : { x: 0 }}
@@ -130,10 +164,10 @@ export function LoginScreen() {
             />
             <div>
               <h1 className="font-display text-[24px] font-bold text-white">
-                Tekrar Hoş Geldin
+                {t("Tekrar Hoş Geldin", "Welcome Back")}
               </h1>
               <p className="mt-1.5 font-body text-[13px] text-white/60">
-                Agent paneline devam etmek için giriş yap
+                {t("Panele devam etmek için giriş yap", "Sign in to continue to your panel")}
               </p>
             </div>
           </div>
@@ -142,7 +176,7 @@ export function LoginScreen() {
             {/* Kullanıcı adı */}
             <label className="flex flex-col gap-1.5">
               <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-white/50">
-                Kullanıcı Adı
+                {t("Kullanıcı Adı", "Username")}
               </span>
               <div className="relative">
                 <User
@@ -165,7 +199,7 @@ export function LoginScreen() {
             {/* Şifre + göster/gizle */}
             <label className="flex flex-col gap-1.5">
               <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-white/50">
-                Şifre
+                {t("Şifre", "Password")}
               </span>
               <div className="relative">
                 <Lock
@@ -186,7 +220,7 @@ export function LoginScreen() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
-                  aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                  aria-label={showPassword ? t("Şifreyi gizle", "Hide password") : t("Şifreyi göster", "Show password")}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -214,11 +248,11 @@ export function LoginScreen() {
               {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Giriş yapılıyor...
+                  {t("Giriş yapılıyor...", "Signing in...")}
                 </>
               ) : (
                 <>
-                  Giriş Yap
+                  {t("Giriş Yap", "Log In")}
                   <ArrowRight
                     size={16}
                     className="transition-transform duration-300 group-hover:translate-x-1"
@@ -235,7 +269,7 @@ export function LoginScreen() {
               <span className="font-mono text-white/80">takımlideri</span> /{" "}
               <span className="font-mono text-white/80">bolgemuduru</span> /{" "}
               <span className="font-mono text-white/80">admin</span> ·{" "}
-              şifre <span className="font-mono text-white/80">123456</span>
+              {t("şifre", "password")} <span className="font-mono text-white/80">123456</span>
             </p>
           </div>
         </motion.div>

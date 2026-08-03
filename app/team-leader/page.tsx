@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { T } from "@/components/i18n/T";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
-import { KpiGrid } from "@/components/agent/dashboard/KpiGrid";
 import { TeamHeroHeader } from "@/components/team-leader/dashboard/TeamHeroHeader";
 import { TeamAssistantCard } from "@/components/team-leader/dashboard/TeamAssistantCard";
 import { TeamKpiGrid } from "@/components/team-leader/dashboard/TeamKpiGrid";
@@ -12,9 +12,15 @@ import { TeamDailyTrendChart } from "@/components/team-leader/dashboard/TeamDail
 import { TeamConversionTables } from "@/components/team-leader/dashboard/TeamConversionTables";
 import { TeamActionPreview } from "@/components/team-leader/dashboard/TeamActionPreview";
 import { TeamMonthlyPaceChart } from "@/components/team-leader/monthly/TeamMonthlyPaceChart";
+import { TeamMonthlyKpiGrid } from "@/components/team-leader/monthly/TeamMonthlyKpiGrid";
 import { TeamShiftTable } from "@/components/team-leader/shift/TeamShiftTable";
+import { TeamShiftKpiGrid } from "@/components/team-leader/shift/TeamShiftKpiGrid";
 import { TeamQualityBarList } from "@/components/team-leader/quality/TeamQualityBarList";
-import { TEAM_MONTHLY_KPIS, TEAM_SHIFT_KPIS, TEAM_QUALITY_KPIS } from "@/lib/mock/team-monthly";
+import { TeamQualityKpiGrid } from "@/components/team-leader/quality/TeamQualityKpiGrid";
+import { TeamLeaderEarningsBand } from "@/components/team-leader/earnings/TeamLeaderEarningsBand";
+import { TeamCommissionTable } from "@/components/team-leader/earnings/TeamCommissionTable";
+import { RankBonusTable } from "@/components/team-leader/earnings/RankBonusTable";
+import { TeamEarningsKpiGrid } from "@/components/team-leader/earnings/TeamEarningsKpiGrid";
 
 export const metadata: Metadata = {
   title: "Natural Clinic — Takım Özeti",
@@ -29,10 +35,13 @@ export const metadata: Metadata = {
 export default function TeamLeaderOverviewPage() {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
+      {/* PARA EN BAŞTA — TL prim bandı sayfanın ilk öğesi. */}
+      <TeamLeaderEarningsBand />
+
       <TeamHeroHeader />
       <TeamAssistantCard />
 
-      <DashboardSection id="ozet" eyebrow="Genel Bakış" title="Seçili Dönemin Özeti">
+      <DashboardSection id="ozet" eyebrow={<T tr="Genel Bakış" en="Overview" />} title={<T tr="Seçili Dönemin Özeti" en="Selected Period Summary" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
           <TeamKpiGrid />
           <TeamConversionKpis />
@@ -57,23 +66,31 @@ export default function TeamLeaderOverviewPage() {
         </div>
       </DashboardSection>
 
-      <DashboardSection id="bu-ay" eyebrow="Bu Ay" title="Satış ve Hedef Durumu">
+      <DashboardSection id="bu-ay" eyebrow={<T tr="Bu Ay" en="This Month" />} title={<T tr="Satış ve Hedef Durumu" en="Sales and Target Status" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
-          <KpiGrid kpis={TEAM_MONTHLY_KPIS} className="lg:grid-cols-5" />
+          <TeamMonthlyKpiGrid />
           <TeamMonthlyPaceChart />
         </div>
       </DashboardSection>
 
-      <DashboardSection id="bu-hafta" eyebrow="Bu Hafta" title="Vardiya ve Mesai Uyumu">
+      <DashboardSection id="prim" eyebrow={<T tr="Prim & Komisyon" en="Commission & Bonus" />} title={<T tr="Priminin Detayı" en="Your Commission in Detail" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
-          <KpiGrid kpis={TEAM_SHIFT_KPIS} />
+          <TeamEarningsKpiGrid />
+          <TeamCommissionTable />
+          <RankBonusTable />
+        </div>
+      </DashboardSection>
+
+      <DashboardSection id="bu-hafta" eyebrow={<T tr="Bu Hafta" en="This Week" />} title={<T tr="Vardiya ve Mesai Uyumu" en="Shift and Attendance Compliance" />}>
+        <div className="flex flex-col gap-4 sm:gap-5">
+          <TeamShiftKpiGrid />
           <TeamShiftTable />
         </div>
       </DashboardSection>
 
-      <DashboardSection id="kalite" eyebrow="Kalite" title="Takımın Çağrı Kalitesi">
+      <DashboardSection id="kalite" eyebrow={<T tr="Kalite" en="Quality" />} title={<T tr="Takımın Çağrı Kalitesi" en="Team's Call Quality" />}>
         <div className="flex flex-col gap-4 sm:gap-5">
-          <KpiGrid kpis={TEAM_QUALITY_KPIS} />
+          <TeamQualityKpiGrid />
           <TeamQualityBarList />
         </div>
       </DashboardSection>

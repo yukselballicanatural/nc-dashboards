@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, ShieldCheck, Briefcase, Users, UserRound, Pencil, Trash2, KeyRound, UserPlus } from "lucide-react";
 import { useActiveRegionRecords } from "@/lib/data/data-source";
-import { useManagedUsers, removeUser, ROLE_LABEL, type ManagedUser, type UserRole } from "@/lib/data/user-store";
+import { useManagedUsers, removeUser, roleLabel, type ManagedUser, type UserRole } from "@/lib/data/user-store";
 import { addLog } from "@/lib/data/log-store";
 import { REGION_MANAGER_PROFILE } from "@/lib/mock/region-manager-profile";
 import { formatNumber } from "@/lib/utils/format";
@@ -80,7 +80,7 @@ export function UserDirectory({
   onEdit?: (user: ManagedUser) => void;
   onGrant?: (target: GrantTarget) => void;
 } = {}) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const records = useActiveRegionRecords();
   const managed = useManagedUsers();
   const [filter, setFilter] = useState<RoleFilter>("all");
@@ -98,7 +98,7 @@ export function UserDirectory({
       list.push({
         id: u.id,
         name: u.name,
-        role: ROLE_LABEL[u.role],
+        role: roleLabel(u.role, lang),
         roleKind: ROLE_TO_KIND[u.role],
         team: u.team,
         detail: `@${u.username}`,
@@ -115,7 +115,10 @@ export function UserDirectory({
         role: REGION_MANAGER_PROFILE.role,
         roleKind: "region",
         team: REGION_MANAGER_PROFILE.team,
-        detail: `${records.length} takım · ${records.reduce((s, t) => s + t.agents.length, 0)} danışman`,
+        detail: t(
+          `${records.length} takım · ${records.reduce((s, t) => s + t.agents.length, 0)} danışman`,
+          `${records.length} teams · ${records.reduce((s, t) => s + t.agents.length, 0)} agents`,
+        ),
       });
     }
     for (const team of records) {
@@ -124,10 +127,10 @@ export function UserDirectory({
         list.push({
           id: leaderId,
           name: team.teamLeaderName,
-          role: "Takım Lideri",
+          role: roleLabel("leader", lang),
           roleKind: "leader",
           team: team.teamName,
-          detail: `${team.agents.length} danışman`,
+          detail: t(`${team.agents.length} danışman`, `${team.agents.length} agents`),
         });
       }
       for (const agent of team.agents) {
@@ -143,7 +146,7 @@ export function UserDirectory({
       }
     }
     return list;
-  }, [records, managed]);
+  }, [records, managed, lang, t]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr-TR");

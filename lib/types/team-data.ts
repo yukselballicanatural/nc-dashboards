@@ -38,6 +38,8 @@ export interface AgentPeriodSummary {
   contacts: number;
   offers: number;
   deals: number;
+  /** Ödemesi alınan deal adedi — compute.ts'teki "payments" KPI'ıyla aynı (bkz. şirket kıyaslaması). */
+  paidDeals: number;
   paymentsEUR: number;
   /** Deal (Won + In Progress) / Lead — compute.ts'teki "Deal" funnel tanımıyla aynı. */
   leadToDealPct: number;

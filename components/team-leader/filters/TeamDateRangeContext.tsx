@@ -25,14 +25,19 @@ const MONTHS_TR = [
   "Oca", "Şub", "Mar", "Nis", "May", "Haz",
   "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
 ] as const;
+const MONTHS_EN = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
 
 function startOfDay(ts: number): number {
   const local = ts + TZ_OFFSET;
   return local - (local % DAY) - TZ_OFFSET;
 }
-function longDate(ts: number): string {
+function longDate(ts: number, lang: "tr" | "en"): string {
   const iso = new Date(ts + TZ_OFFSET).toISOString();
-  return `${Number(iso.slice(8, 10))} ${MONTHS_TR[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+  const months = lang === "en" ? MONTHS_EN : MONTHS_TR;
+  return `${Number(iso.slice(8, 10))} ${months[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 }
 function inputValue(ts: number): string {
   return new Date(ts + TZ_OFFSET).toISOString().slice(0, 10);
@@ -87,8 +92,8 @@ export function TeamDateRangeProvider({ children }: { children: ReactNode }) {
   );
 
   const label = useMemo(
-    () => `${longDate(startMs)} – ${longDate(endMs)}`,
-    [startMs, endMs],
+    () => `${longDate(startMs, lang)} – ${longDate(endMs, lang)}`,
+    [startMs, endMs, lang],
   );
 
   const value: TeamDateRangeValue = {

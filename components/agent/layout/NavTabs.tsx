@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils/cn";
 
 /**
  * Ana menü — dashboard + 3 sayfa (kullanıcı kararı: 7 sekme yerine
- * "detaylı dashboard + 2-3 menü"). Dar ekranda yatay kaydırmalı.
+ * "detaylı dashboard + 2-3 menü"). Sol kenar çubuğu içinde dikey liste
+ * (CRM tarzı); `collapsed` true olduğunda yalnızca ikonlar + tooltip.
  */
 
 interface NavItem {
@@ -33,35 +34,35 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/agent/performans", label: "Performansım", labelEn: "My Performance", icon: Medal },
 ];
 
-export function NavTabs() {
+export function NavTabs({ collapsed = false }: { collapsed?: boolean } = {}) {
   const pathname = usePathname();
   const { t } = useLang();
 
   return (
-    <nav
-      aria-label={t("Agent paneli menüsü", "Agent panel menu")}
-      className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      <ul className="flex items-center justify-center gap-1">
+    <nav aria-label={t("Agent paneli menüsü", "Agent panel menu")} className="w-full">
+      <ul className="flex w-full flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
           const Icon = item.icon;
+          const label = t(item.label, item.labelEn);
           return (
-            <li key={item.href} className="shrink-0">
+            <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
+                title={collapsed ? label : undefined}
                 className={cn(
-                  "relative flex items-center gap-2 rounded-control px-3.5 py-2 font-body text-[13px] font-medium transition-colors",
+                  "relative flex items-center gap-2.5 rounded-control px-3 py-2.5 font-body text-[13px] font-medium transition-colors",
+                  collapsed && "justify-center px-0",
                   isActive
                     ? "bg-brand/10 text-brand"
-                    : "text-fg-secondary hover:bg-surface hover:text-fg",
+                    : "text-fg-secondary hover:bg-elevated hover:text-fg",
                 )}
               >
-                <Icon size={15} strokeWidth={2} />
-                <span className="hidden sm:inline">{t(item.label, item.labelEn)}</span>
+                <Icon size={16} strokeWidth={2} className="shrink-0" />
+                {!collapsed && <span className="truncate">{label}</span>}
               </Link>
             </li>
           );

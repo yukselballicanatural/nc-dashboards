@@ -1,6 +1,13 @@
-import { QUALITY_KPIS, SHIFT_KPIS, TARGET_KPIS } from "@/lib/mock/mock-data";
+"use client";
+
+import { qualityKpis, shiftKpis, targetKpis } from "@/lib/mock/mock-data";
+import { earningsKpis } from "@/lib/mock/agent-earnings";
 import { T } from "@/components/i18n/T";
-import { HeroHeader } from "@/components/agent/dashboard/HeroHeader";
+import { useLang } from "@/components/i18n/LanguageProvider";
+import { EarningsHeroBand } from "@/components/agent/earnings/EarningsHeroBand";
+import { DailyCommissionTable } from "@/components/agent/earnings/DailyCommissionTable";
+import { QuarterTierLadder } from "@/components/agent/earnings/QuarterTierLadder";
+import { YearProjectionChart } from "@/components/agent/earnings/YearProjectionChart";
 import { InsightStrip } from "@/components/agent/dashboard/InsightStrip";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/agent/dashboard/KpiGrid";
@@ -22,6 +29,7 @@ import { RankCard } from "@/components/agent/dashboard/RankCard";
 import { QualityTrendChart } from "@/components/agent/dashboard/QualityTrendChart";
 import { ShiftTable } from "@/components/agent/dashboard/ShiftTable";
 import { TeamComparisonBars } from "@/components/agent/dashboard/TeamComparisonBars";
+import { CompanyBenchmarkCard } from "@/components/agent/benchmark/CompanyBenchmarkCard";
 
 /**
  * Günlük Çalışma Ekranı — v2 4.1, kapsamlı tek-sayfa özet.
@@ -29,9 +37,12 @@ import { TeamComparisonBars } from "@/components/agent/dashboard/TeamComparisonB
  * verinin derinlemesine (tam tablolar/filtreler) hâlini sunar.
  */
 export default function AgentDashboardPage() {
+  const { lang } = useLang();
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
-      <HeroHeader />
+      {/* PARA EN BAŞTA — prim bandı sayfanın ilk öğesi; kimlik/karşılama da
+          bunun içinde tek bir bant olarak (bkz. EarningsHeroBand notu). */}
+      <EarningsHeroBand />
 
       <InsightStrip />
 
@@ -108,7 +119,7 @@ export default function AgentDashboardPage() {
         title={<T tr="Hedefin ve Kazancın" en="Your Target and Earnings" />}
       >
         <div className="flex flex-col gap-4 sm:gap-5">
-          <KpiGrid kpis={TARGET_KPIS} className="lg:grid-cols-5" />
+          <KpiGrid kpis={targetKpis(lang)} className="lg:grid-cols-5" />
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
             <div className="lg:col-span-4">
               <GoalGauge />
@@ -121,19 +132,40 @@ export default function AgentDashboardPage() {
             </div>
           </div>
           <TeamComparisonBars />
+          <CompanyBenchmarkCard />
         </div>
       </DashboardSection>
 
-      {/* 5 — KALİTE & VARDİYA */}
+      {/* 5 — PRİM & KOMİSYON */}
+      <DashboardSection
+        id="prim"
+        eyebrow={<T tr="Prim & Komisyon" en="Commission & Bonus" />}
+        title={<T tr="Priminin Detayı" en="Your Commission in Detail" />}
+      >
+        <div className="flex flex-col gap-4 sm:gap-5">
+          <KpiGrid kpis={earningsKpis(lang)} />
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+            <div className="lg:col-span-7">
+              <DailyCommissionTable />
+            </div>
+            <div className="lg:col-span-5">
+              <QuarterTierLadder />
+            </div>
+          </div>
+          <YearProjectionChart />
+        </div>
+      </DashboardSection>
+
+      {/* 6 — KALİTE & VARDİYA */}
       <DashboardSection
         id="kalite"
         eyebrow={<T tr="Kalite & Vardiya" en="Quality & Shift" />}
         title={<T tr="Kalite ve Vardiya Uyumun" en="Your Quality and Shift Compliance" />}
       >
         <div className="flex flex-col gap-4 sm:gap-5">
-          <KpiGrid kpis={QUALITY_KPIS} />
+          <KpiGrid kpis={qualityKpis(lang)} />
           <QualityTrendChart />
-          <KpiGrid kpis={SHIFT_KPIS} />
+          <KpiGrid kpis={shiftKpis(lang)} />
           <ShiftTable />
         </div>
       </DashboardSection>

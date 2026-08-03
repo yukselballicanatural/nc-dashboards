@@ -33,32 +33,35 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/team-leader/aksiyon-merkezi", label: "Aksiyon Merkezi", labelEn: "Action Center", icon: ListChecks },
 ];
 
-export function NavTabs() {
+export function NavTabs({ collapsed = false }: { collapsed?: boolean } = {}) {
   const pathname = usePathname();
   const { t } = useLang();
 
   return (
-    <nav aria-label={t("Takım Lideri paneli menüsü", "Team Leader panel menu")} className="-mx-1 overflow-x-auto py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <ul className="flex w-full items-center justify-center gap-1.5 px-1">
+    <nav aria-label={t("Takım Lideri paneli menüsü", "Team Leader panel menu")} className="w-full">
+      <ul className="flex w-full flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
           const Icon = item.icon;
+          const label = t(item.label, item.labelEn);
           return (
-            <li key={item.href} className="shrink-0">
+            <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
+                title={collapsed ? label : undefined}
                 className={cn(
-                  "relative flex items-center gap-2 rounded-control px-3.5 py-2 font-body text-[13px] font-medium transition-colors",
+                  "relative flex items-center gap-2.5 rounded-control px-3 py-2.5 font-body text-[13px] font-medium transition-colors",
+                  collapsed && "justify-center px-0",
                   isActive
                     ? "bg-brand/10 text-brand"
-                    : "text-fg-secondary hover:bg-surface hover:text-fg",
+                    : "text-fg-secondary hover:bg-elevated hover:text-fg",
                 )}
               >
-                <Icon size={15} strokeWidth={2} />
-                <span className="hidden sm:inline">{t(item.label, item.labelEn)}</span>
+                <Icon size={16} strokeWidth={2} className="shrink-0" />
+                {!collapsed && <span className="truncate">{label}</span>}
               </Link>
             </li>
           );
