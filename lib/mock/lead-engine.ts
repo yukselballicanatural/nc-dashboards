@@ -9,7 +9,7 @@ import { Rng } from "./seeded-random";
 import type { Lead, LeadCall, LeadStatus, OfferStatus, ResultReason } from "@/lib/types/agent-data";
 
 /** Mock saat — gerçek saate bağlanmaz (deterministik türetimler için). */
-export const MOCK_NOW = Date.parse("2026-07-16T12:00:00+03:00");
+export const MOCK_NOW = Date.parse("2026-08-04T12:00:00+03:00");
 
 export const MINUTE = 60_000;
 export const HOUR = 3_600_000;

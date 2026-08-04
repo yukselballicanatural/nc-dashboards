@@ -5,7 +5,7 @@
  * gerçek verisine uygular ve ekranın ihtiyaç duyduğu satırları üretir.
  *
  * VERİ KAYNAĞI NOTU (önemli):
- *  - İÇİNDE BULUNULAN AY (mock: Temmuz 2026) tamamen `LEADS`ten türetilir —
+ *  - İÇİNDE BULUNULAN AY (mock: Ağustos 2026) tamamen `LEADS`ten türetilir —
  *    agent'ın her gün izlediği "anlık prim" rakamı gerçek lead verisinden gelir.
  *  - GEÇMİŞ AYLAR seed'li sentetik seridir. Sebep: lead motoru yalnızca 30 gün
  *    geriye üretim yapar (bkz. lead-engine LOOKBACK_DAYS), dolayısıyla Haziran
