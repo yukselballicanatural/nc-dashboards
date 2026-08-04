@@ -231,3 +231,27 @@ export const AGENT_BENCHMARKS: Record<BenchmarkMetric, MetricBenchmark> = {
   paidDeals: computeBenchmark("paidDeals"),
   slaCompliantPct: computeBenchmark("slaCompliantPct"),
 };
+
+/**
+ * FUNNEL AŞAMA GEÇİŞ ORANLARI — şirket geneli, sabit 30 günlük pencere
+ * (COMPANY_AGENTS ile aynı taban — bkz. dosya başı not). Genel Funnel
+ * kartındaki Lead→Contact / Contact→Offer / Offer→Deal / Deal→Paid geçiş
+ * satırlarının yanına "şirket ortalaması" kıyası koymak için kullanılır.
+ * Algoritma aynı: Toplam(sonraki aşama) / Toplam(önceki aşama).
+ */
+export type FunnelTransitionKey = "leadToContact" | "contactToOffer" | "offerToDeal" | "dealToPaid";
+
+export const COMPANY_FUNNEL_TRANSITIONS: Record<FunnelTransitionKey, number> = {
+  leadToContact: (sumBy((a) => a.contacts) / Math.max(1, sumBy((a) => a.leads))) * 100,
+  contactToOffer: (sumBy((a) => a.offers) / Math.max(1, sumBy((a) => a.contacts))) * 100,
+  offerToDeal: (sumBy((a) => a.deals) / Math.max(1, sumBy((a) => a.offers))) * 100,
+  dealToPaid: (sumBy((a) => a.paidDeals) / Math.max(1, sumBy((a) => a.deals))) * 100,
+};
+
+/** Genel Funnel'daki hangi aşama satırının hangi şirket geçişiyle kıyaslanacağı. */
+export const FUNNEL_STAGE_TRANSITION: Record<string, FunnelTransitionKey> = {
+  contact: "leadToContact",
+  "offer-created": "contactToOffer",
+  deal: "offerToDeal",
+  paid: "dealToPaid",
+};

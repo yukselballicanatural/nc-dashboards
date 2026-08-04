@@ -39,8 +39,29 @@ export default function AgentDashboardPage() {
   const { lang } = useLang();
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
-      {/* PARA EN BAŞTA — prim bandı sayfanın ilk öğesi; kimlik/karşılama da
-          bunun içinde tek bir bant olarak (bkz. EarningsHeroBand notu). */}
+      {/* FUNNEL EN ÜSTTE — satış hunisi ekranın tam üstünde; her aşamanın
+          yüzdesel dönüşümü + şirket ortalamasına göre renk kodlu kıyası
+          (bkz. FullFunnelChart, company-benchmark.ts) ilk görülen şey olsun. */}
+      <DashboardSection
+        id="funnel"
+        eyebrow={<T tr="Funnel & Fırsatlar" en="Funnel & Opportunities" />}
+        title={<T tr="Fırsatların Nerede?" en="Where Are Your Opportunities?" />}
+      >
+        <div className="flex flex-col gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+            <div className="lg:col-span-7">
+              <FullFunnelChart />
+            </div>
+            <div className="lg:col-span-5">
+              <CallbackList />
+            </div>
+          </div>
+          <ConversionTables />
+        </div>
+      </DashboardSection>
+
+      {/* PARA EN BAŞTA — prim bandı; kimlik/karşılama da bunun içinde tek
+          bir bant olarak (bkz. EarningsHeroBand notu). */}
       <EarningsHeroBand />
 
       <InsightStrip />
@@ -94,26 +115,7 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 3 — FUNNEL & FIRSATLAR */}
-      <DashboardSection
-        id="funnel"
-        eyebrow={<T tr="Funnel & Fırsatlar" en="Funnel & Opportunities" />}
-        title={<T tr="Fırsatların Nerede?" en="Where Are Your Opportunities?" />}
-      >
-        <div className="flex flex-col gap-4 sm:gap-5">
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <FullFunnelChart />
-            </div>
-            <div className="lg:col-span-5">
-              <CallbackList />
-            </div>
-          </div>
-          <ConversionTables />
-        </div>
-      </DashboardSection>
-
-      {/* 4 — HEDEF & KAZANÇ */}
+      {/* 3 — HEDEF & KAZANÇ */}
       <DashboardSection
         id="hedef"
         eyebrow={<T tr="Hedef & Kazanç" en="Target & Earnings" />}
@@ -137,7 +139,7 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 5 — PRİM & KOMİSYON */}
+      {/* 4 — PRİM & KOMİSYON */}
       <DashboardSection
         id="prim"
         eyebrow={<T tr="Prim & Komisyon" en="Commission & Bonus" />}
@@ -155,7 +157,7 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 6 — KALİTE & VARDİYA */}
+      {/* 5 — KALİTE & VARDİYA */}
       <DashboardSection
         id="kalite"
         eyebrow={<T tr="Kalite & Vardiya" en="Quality & Shift" />}
