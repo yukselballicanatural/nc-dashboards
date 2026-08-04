@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type TooltipContentProps,
+} from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { AlertTriangle, ArrowDown, ArrowUp, Trophy } from "lucide-react";
 import {
   AGENT_BENCHMARKS,
@@ -12,12 +23,14 @@ import {
   type BenchmarkMetric,
   type MetricBenchmark,
 } from "@/lib/mock/company-benchmark";
+import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { formatNumber } from "@/lib/utils/format";
 import { useLang } from "@/components/i18n/LanguageProvider";
 import { T } from "@/components/i18n/T";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { SidePanel } from "@/components/ui/SidePanel";
+import { AXIS_TICK, TooltipFrame } from "@/components/ui/ChartBits";
 import { cn } from "@/lib/utils/cn";
 
 export interface BenchmarkDetailDrawerProps {
@@ -27,19 +40,188 @@ export interface BenchmarkDetailDrawerProps {
 
 /**
  * Tailwind JIT string-interpolasyonlu sınıf adlarını taramaz — bu yüzden her
- * metrik için TAM sınıf adları burada literal olarak tanımlanır (ör.
- * `bg-${accent}` derlenmezdi).
+ * metrik için TAM sınıf adları burada literal olarak tanımlanır.
  */
-const METRIC_STYLES: Record<BenchmarkMetric, { chip: string; bucket: string }> = {
-  offers: { chip: "bg-violet/12 text-violet", bucket: "bg-violet" },
-  deals: { chip: "bg-brand/12 text-brand", bucket: "bg-brand" },
-  paidDeals: { chip: "bg-brand-secondary/12 text-brand-secondary", bucket: "bg-brand-secondary" },
+const METRIC_STYLES: Record<BenchmarkMetric, { chip: string; color: string }> = {
+  offers: { chip: "bg-violet/12 text-violet", color: "var(--violet)" },
+  deals: { chip: "bg-brand/12 text-brand", color: "var(--brand)" },
+  paidDeals: { chip: "bg-brand-secondary/12 text-brand-secondary", color: "var(--brand-secondary)" },
 };
 
-/** Şirket geneli 122 danışman içinde ilgili metriğe göre sıralanmış takım listesi. */
+/** Şirket geneli havuz içinde ilgili metriğe göre sıralanmış TAKIM listesi. */
 function teamLeaderboard(metric: BenchmarkMetric) {
   return COMPANY_AGENTS.filter((a) => a.teamId === "team-aamir-ali").sort(
     (a, b) => b[metric] - a[metric],
+  );
+}
+
+/** "Sen / Takım Ort. / Şirket Ort." — 3 barlı kıyaslama grafiği. */
+function ComparisonChart({ b, color }: { b: MetricBenchmark; color: string }) {
+  const { t } = useLang();
+  const reduced = usePrefersReducedMotion();
+  const data = [
+    { label: t("Sen", "You"), value: b.agentValue, deltaPct: null as number | null, fill: color },
+    { label: t("Takım Ort.", "Team Avg."), value: b.teamAverage, deltaPct: b.vsTeamPct, fill: "var(--neutral)" },
+    { label: t("Şirket Ort.", "Company Avg."), value: b.companyAverage, deltaPct: b.vsCompanyPct, fill: "var(--fg-muted)" },
+  ];
+
+  return (
+    <div className="h-[104px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical" margin={{ top: 2, right: 34, bottom: 2, left: 4 }} barSize={16}>
+          <XAxis type="number" hide />
+          <YAxis
+            type="category"
+            dataKey="label"
+            axisLine={false}
+            tickLine={false}
+            width={78}
+            tick={AXIS_TICK}
+          />
+          <Tooltip
+            cursor={{ fill: "var(--elevated)" }}
+            content={({ active, payload }: TooltipContentProps<ValueType, NameType>) => {
+              if (!active || !payload?.length) return null;
+              const row = payload[0].payload as (typeof data)[number];
+              return (
+                <TooltipFrame
+                  title={row.label}
+                  rows={[
+                    {
+                      label: t("Değer", "Value"),
+                      value: formatNumber(row.value, 1),
+                      color: row.fill,
+                    },
+                    ...(row.deltaPct !== null
+                      ? [{ label: t("Sana göre fark", "Diff vs. you"), value: `${b.agentValue - row.value >= 0 ? "+" : ""}${formatNumber(b.agentValue - row.value, 1)}` }]
+                      : []),
+                  ]}
+                />
+              );
+            }}
+          />
+          <Bar
+            dataKey="value"
+            radius={[0, 6, 6, 0]}
+            isAnimationActive={!reduced}
+            animationDuration={700}
+            animationEasing="ease-out"
+            label={{
+              position: "right",
+              fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              fill: "var(--fg-secondary)",
+              formatter: (label: unknown) => {
+                const value = Number(label);
+                return formatNumber(value, Number.isInteger(value) ? 0 : 1);
+              },
+            }}
+          >
+            {data.map((row) => (
+              <Cell key={row.label} fill={row.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Şirket geneli dağılım histogramı — agent'ın düştüğü kova vurgulanır. */
+function DistributionChart({ b, color }: { b: MetricBenchmark; color: string }) {
+  const { t } = useLang();
+  const reduced = usePrefersReducedMotion();
+  const data = b.distribution.buckets.map((bucket) => ({ ...bucket }));
+
+  return (
+    <div className="h-24 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -30 }} barCategoryGap={4}>
+          <XAxis dataKey="rangeLabel" axisLine={false} tickLine={false} tick={{ ...AXIS_TICK, fontSize: 9 }} interval={0} />
+          <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={AXIS_TICK} width={26} />
+          <Tooltip
+            cursor={{ fill: "var(--elevated)" }}
+            content={({ active, payload }: TooltipContentProps<ValueType, NameType>) => {
+              if (!active || !payload?.length) return null;
+              const row = payload[0].payload as (typeof data)[number];
+              return (
+                <TooltipFrame
+                  title={row.rangeLabel}
+                  rows={[{ label: t("Danışman", "Agents"), value: formatNumber(row.count) }]}
+                />
+              );
+            }}
+          />
+          <Bar
+            dataKey="count"
+            radius={[3, 3, 0, 0]}
+            maxBarSize={26}
+            isAnimationActive={!reduced}
+            animationDuration={700}
+            animationEasing="ease-out"
+          >
+            {data.map((bucket) => (
+              <Cell key={bucket.rangeLabel} fill={bucket.containsAgent ? color : "var(--neutral)"} opacity={bucket.containsAgent ? 1 : 0.3} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Takım içi sıralama — yatay barlar, "sen" vurgulanır. */
+function TeamRankChart({ metric, color }: { metric: BenchmarkMetric; color: string }) {
+  const { t, lang } = useLang();
+  const reduced = usePrefersReducedMotion();
+  const rows = teamLeaderboard(metric);
+  const data = rows.map((row, i) => ({
+    label: `${i + 1}. ${row.name}`,
+    value: row[metric],
+    isMe: row.agentId === BENCHMARK_AGENT_ID,
+  }));
+
+  return (
+    <div style={{ height: Math.max(120, data.length * 24) }} className="w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical" margin={{ top: 2, right: 30, bottom: 2, left: 4 }} barCategoryGap={4}>
+          <XAxis type="number" hide />
+          <YAxis
+            type="category"
+            dataKey="label"
+            axisLine={false}
+            tickLine={false}
+            width={132}
+            tick={{ ...AXIS_TICK, fontSize: 10.5 }}
+          />
+          <Tooltip
+            cursor={{ fill: "var(--elevated)" }}
+            content={({ active, payload }: TooltipContentProps<ValueType, NameType>) => {
+              if (!active || !payload?.length) return null;
+              const row = payload[0].payload as (typeof data)[number];
+              return (
+                <TooltipFrame
+                  title={row.isMe ? t("Sen", "You") : row.label.replace(/^\d+\.\s/, "")}
+                  rows={[{ label: metricLabel(metric, lang), value: formatNumber(row.value) }]}
+                />
+              );
+            }}
+          />
+          <Bar
+            dataKey="value"
+            radius={[0, 4, 4, 0]}
+            maxBarSize={14}
+            isAnimationActive={!reduced}
+            animationDuration={700}
+            animationEasing="ease-out"
+          >
+            {data.map((row) => (
+              <Cell key={row.label} fill={row.isMe ? color : "var(--neutral)"} opacity={row.isMe ? 1 : 0.35} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -48,8 +230,6 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
   const b: MetricBenchmark = AGENT_BENCHMARKS[metric];
   const styles = METRIC_STYLES[metric];
   const aheadOfCompany = b.vsCompanyPct >= 0;
-  const aheadOfTeam = b.vsTeamPct >= 0;
-  const maxBucketCount = Math.max(1, ...b.distribution.buckets.map((x) => x.count));
 
   return (
     <Card className="flex flex-col gap-4">
@@ -90,34 +270,25 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
         </div>
       </div>
 
-      {/* Kıyaslama satırları */}
+      {/* Sen / Takım / Şirket — canlı kıyaslama grafiği */}
       <div className="flex flex-col gap-1.5">
-        {[
-          { label: t("Takım ortalamasına göre", "vs. team average"), pct: b.vsTeamPct, ahead: aheadOfTeam, avg: b.teamAverage },
-          { label: t("Şirket ortalamasına göre", "vs. company average"), pct: b.vsCompanyPct, ahead: aheadOfCompany, avg: b.companyAverage },
-        ].map((row) => (
-          <div
-            key={row.label}
-            className="flex items-center justify-between gap-3 rounded-control border border-border bg-elevated px-3 py-2"
+        <div className="flex items-center justify-between">
+          <span className="font-body text-[10.5px] font-semibold uppercase tracking-wide text-fg-muted">
+            <T tr="Sen / Takım / Şirket" en="You / Team / Company" />
+          </span>
+          <span
+            className={cn(
+              "flex items-center gap-1 rounded-pill px-2 py-0.5 font-mono text-[10.5px] font-semibold",
+              aheadOfCompany ? "bg-success/12 text-success" : "bg-critical/12 text-critical",
+            )}
           >
-            <span className="font-body text-[11.5px] text-fg-secondary">{row.label}</span>
-            <span className="flex items-center gap-1.5">
-              <span className="font-mono text-[11px] text-fg-muted">
-                ({t("ort.", "avg.")} {formatNumber(row.avg, 1)})
-              </span>
-              <span
-                className={cn(
-                  "flex items-center gap-1 rounded-pill px-2 py-0.5 font-mono text-[11px] font-semibold",
-                  row.ahead ? "bg-success/12 text-success" : "bg-critical/12 text-critical",
-                )}
-              >
-                {row.ahead ? <ArrowUp size={11} aria-hidden /> : <ArrowDown size={11} aria-hidden />}
-                {row.ahead ? "+" : ""}
-                {formatNumber(row.pct, 1)}%
-              </span>
-            </span>
-          </div>
-        ))}
+            {aheadOfCompany ? <ArrowUp size={10} aria-hidden /> : <ArrowDown size={10} aria-hidden />}
+            {aheadOfCompany ? "+" : ""}
+            {formatNumber(b.vsCompanyPct, 1)}%{" "}
+            <T tr="şirkete göre" en="vs. company" />
+          </span>
+        </div>
+        <ComparisonChart b={b} color={styles.color} />
       </div>
 
       {/* Dağılım histogramı */}
@@ -128,82 +299,22 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
             en={`Distribution across ${formatNumber(COMPANY_AGENT_COUNT)} agents`}
           />
         </span>
-        <div className="flex items-end gap-1.5">
-          {b.distribution.buckets.map((bucket) => (
-            <div key={bucket.rangeLabel} className="flex flex-1 flex-col items-center gap-1">
-              <div className="flex h-16 w-full items-end">
-                <div
-                  className={cn(
-                    "w-full rounded-t-[3px] transition-[height]",
-                    bucket.containsAgent ? styles.bucket : "bg-neutral/25",
-                  )}
-                  style={{ height: `${Math.max(6, (bucket.count / maxBucketCount) * 100)}%` }}
-                  title={`${bucket.rangeLabel}: ${bucket.count} ${t("danışman", "agents")}`}
-                />
-              </div>
-              <span className="font-mono text-[9px] text-fg-muted">{bucket.rangeLabel}</span>
-            </div>
-          ))}
-        </div>
+        <DistributionChart b={b} color={styles.color} />
         <p className="font-body text-[10.5px] text-fg-muted">
           <T tr="Medyan" en="Median" />{" "}
           <span className="font-mono text-fg-secondary">{formatNumber(b.distribution.median)}</span>
-          {" · "}
-          <T tr="üst %25 eşiği" en="top 25% threshold" />{" "}
-          <span className="font-mono text-fg-secondary">{formatNumber(b.distribution.p75)}</span>
           {" · "}
           <T tr="üst %10 eşiği" en="top 10% threshold" />{" "}
           <span className="font-mono text-fg-secondary">{formatNumber(b.distribution.p90)}</span>
         </p>
       </div>
-    </Card>
-  );
-}
 
-function TeamLeaderboardCard({ metric }: { metric: BenchmarkMetric }) {
-  const { t } = useLang();
-  const rows = teamLeaderboard(metric);
-
-  return (
-    <Card className="flex flex-col gap-3">
-      <SectionTitle>
-        <T
-          tr={`${BENCHMARK_TEAM_NAME} — ${metricLabel(metric, "tr")} Sıralaması`}
-          en={`${BENCHMARK_TEAM_NAME} — ${metricLabel(metric, "en")} Ranking`}
-        />
-      </SectionTitle>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[320px] border-collapse">
-          <tbody>
-            {rows.map((row, i) => {
-              const isMe = row.agentId === BENCHMARK_AGENT_ID;
-              return (
-                <tr
-                  key={row.agentId}
-                  className={cn(
-                    "border-b border-border last:border-0",
-                    isMe && "bg-brand/8",
-                  )}
-                >
-                  <td className="w-8 px-2 py-1.5 text-left font-mono text-[11px] text-fg-muted">
-                    {i + 1 <= 3 ? <Trophy size={12} className="text-brand-secondary" aria-hidden /> : `#${i + 1}`}
-                  </td>
-                  <td className="px-2 py-1.5 text-left font-body text-[12px] text-fg">
-                    {row.name}
-                    {isMe && (
-                      <span className="ml-1.5 rounded-pill bg-brand/15 px-1.5 py-0.5 font-body text-[9px] font-semibold uppercase text-brand">
-                        {t("sen", "you")}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-2 py-1.5 text-right font-mono text-[12px] font-semibold text-fg">
-                    {formatNumber(row[metric])}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* Takım içi sıralama — canlı grafik */}
+      <div className="flex flex-col gap-1.5">
+        <span className="font-body text-[10.5px] font-semibold uppercase tracking-wide text-fg-muted">
+          <T tr={`${BENCHMARK_TEAM_NAME} sıralaması`} en={`${BENCHMARK_TEAM_NAME} ranking`} />
+        </span>
+        <TeamRankChart metric={metric} color={styles.color} />
       </div>
     </Card>
   );
@@ -274,10 +385,6 @@ export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerPr
 
       {BENCHMARK_METRICS.map((metric) => (
         <MetricDeepCard key={metric} metric={metric} />
-      ))}
-
-      {BENCHMARK_METRICS.map((metric) => (
-        <TeamLeaderboardCard key={`lb-${metric}`} metric={metric} />
       ))}
     </SidePanel>
   );
