@@ -145,17 +145,12 @@ export default function AgentDashboardPage() {
       >
         <div className="flex flex-col gap-4 sm:gap-5">
           <KpiGrid kpis={earningsKpis(lang)} />
-          {/* items-start: iki tablonun boyu doğal olarak farklı (biri günlük satır
-              sayısına, diğeri sabit merdivene göre) — stretch ile birbirine eşitlenince
-              kısa olan kartta büyük boş alan oluşuyordu. */}
-          <div className="grid grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <DailyCommissionTable />
-            </div>
-            <div className="lg:col-span-5">
-              <QuarterTierLadder />
-            </div>
-          </div>
+          {/* Alt alta (yan yana değil): günlük tablonun satır sayısı aya göre
+              çok değişken (ayın başında 1 satır, sonunda 30 satır olabilir) —
+              sabit yükseklikli merdivenin yanına konunca hep bir taraf boşluklu
+              kalıyordu. Tam genişlik + alt alta bu asimetriyi kalıcı çözer. */}
+          <DailyCommissionTable />
+          <QuarterTierLadder />
           <YearProjectionChart />
         </div>
       </DashboardSection>
