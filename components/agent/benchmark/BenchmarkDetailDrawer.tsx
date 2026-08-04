@@ -20,6 +20,7 @@ import {
   BENCHMARK_TEAM_NAME,
   COMPANY_AGENT_COUNT,
   COMPANY_AGENTS,
+  PERCENT_METRICS,
   metricLabel,
   type BenchmarkMetric,
   type MetricBenchmark,
@@ -60,14 +61,16 @@ function CountUpValue({
   digits = 0,
   className,
   prefix = "",
+  suffix = "",
 }: {
   value: number;
   digits?: number;
   className?: string;
   prefix?: string;
+  suffix?: string;
 }) {
   const animated = useCountUp(value, 900);
-  return <span className={className}>{prefix}{formatNumber(animated, digits)}</span>;
+  return <span className={className}>{prefix}{formatNumber(animated, digits)}{suffix}</span>;
 }
 
 export interface BenchmarkDetailDrawerProps {
@@ -83,6 +86,7 @@ const METRIC_STYLES: Record<BenchmarkMetric, { chip: string; color: string }> = 
   offers: { chip: "bg-violet/12 text-violet", color: "var(--violet)" },
   deals: { chip: "bg-brand/12 text-brand", color: "var(--brand)" },
   paidDeals: { chip: "bg-brand-secondary/12 text-brand-secondary", color: "var(--brand-secondary)" },
+  slaCompliantPct: { chip: "bg-indigo/12 text-indigo", color: "var(--indigo)" },
 };
 
 /** Şirket geneli havuz içinde ilgili metriğe göre sıralanmış TAKIM listesi. */
@@ -93,7 +97,7 @@ function teamLeaderboard(metric: BenchmarkMetric) {
 }
 
 /** "Sen / Takım Ort. / Şirket Ort." — 3 barlı kıyaslama grafiği. */
-function ComparisonChart({ b, color }: { b: MetricBenchmark; color: string }) {
+function ComparisonChart({ b, color, unit = "" }: { b: MetricBenchmark; color: string; unit?: string }) {
   const { t } = useLang();
   const reduced = usePrefersReducedMotion();
   const data = [
@@ -126,7 +130,7 @@ function ComparisonChart({ b, color }: { b: MetricBenchmark; color: string }) {
                   rows={[
                     {
                       label: t("Değer", "Value"),
-                      value: formatNumber(row.value, 1),
+                      value: `${formatNumber(row.value, 1)}${unit}`,
                       color: row.fill,
                     },
                     ...(row.deltaPct !== null
@@ -151,7 +155,7 @@ function ComparisonChart({ b, color }: { b: MetricBenchmark; color: string }) {
               fill: "var(--fg-secondary)",
               formatter: (label: unknown) => {
                 const value = Number(label);
-                return formatNumber(value, Number.isInteger(value) ? 0 : 1);
+                return `${formatNumber(value, Number.isInteger(value) ? 0 : 1)}${unit}`;
               },
             }}
           >
@@ -270,13 +274,15 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
   const b: MetricBenchmark = AGENT_BENCHMARKS[metric];
   const styles = METRIC_STYLES[metric];
   const aheadOfCompany = b.vsCompanyPct >= 0;
+  const isPercent = PERCENT_METRICS.has(metric);
+  const unit = isPercent ? "%" : "";
 
   return (
     <Card hoverable className="flex flex-col gap-4">
       <SectionTitle
         aside={
           <span className={cn("shrink-0 rounded-pill px-2.5 py-1 font-mono text-[11px] font-semibold", styles.chip)}>
-            <CountUpValue value={b.agentValue} />
+            <CountUpValue value={b.agentValue} digits={isPercent ? 1 : 0} suffix={unit} />
           </span>
         }
       >
@@ -328,7 +334,7 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
             <T tr="şirkete göre" en="vs. company" />
           </span>
         </div>
-        <ComparisonChart b={b} color={styles.color} />
+        <ComparisonChart b={b} color={styles.color} unit={unit} />
       </div>
 
       {/* Dağılım histogramı */}
@@ -394,6 +400,7 @@ export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerPr
           {BENCHMARK_METRICS.map((metric) => {
             const b = AGENT_BENCHMARKS[metric];
             const ahead = b.vsCompanyPct >= 0;
+            const isPercent = PERCENT_METRICS.has(metric);
             return (
               <div
                 key={metric}
@@ -403,7 +410,7 @@ export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerPr
                   {metricLabel(metric, "tr")}
                 </span>
                 <span className="font-mono text-[16px] font-bold text-fg">
-                  <CountUpValue value={b.agentValue} />
+                  <CountUpValue value={b.agentValue} digits={isPercent ? 1 : 0} suffix={isPercent ? "%" : ""} />
                 </span>
                 <span className={cn("font-mono text-[10.5px] font-semibold", ahead ? "text-success" : "text-critical")}>
                   {ahead ? "+" : ""}
@@ -429,8 +436,8 @@ export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerPr
           )}
           <p className="font-body text-[12.5px] leading-relaxed text-fg">
             <T
-              tr={`3 metrikten ${aboveCount}'inde şirket ortalamasının üzerindesin. En güçlü olduğun metrik ${metricLabel(best, "tr")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — en çok gelişim alanın ${metricLabel(worst, "tr")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). ${metricLabel(worst, "tr")}'de şirket ortalamasını yakalamak için aylık ortalama ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} birim daha gerekiyor.`}
-              en={`You're above the company average in ${aboveCount} of 3 metrics. Your strongest metric is ${metricLabel(best, "en")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — your biggest growth area is ${metricLabel(worst, "en")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). Closing the gap to the company average there needs about ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} more.`}
+              tr={`${BENCHMARK_METRICS.length} metrikten ${aboveCount}'inde şirket ortalamasının üzerindesin. En güçlü olduğun metrik ${metricLabel(best, "tr")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — en çok gelişim alanın ${metricLabel(worst, "tr")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). ${metricLabel(worst, "tr")}'de şirket ortalamasını yakalamak için ortalama ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))}${PERCENT_METRICS.has(worst) ? " puan" : " birim"} daha gerekiyor.`}
+              en={`You're above the company average in ${aboveCount} of ${BENCHMARK_METRICS.length} metrics. Your strongest metric is ${metricLabel(best, "en")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — your biggest growth area is ${metricLabel(worst, "en")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). Closing the gap to the company average there needs about ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} more${PERCENT_METRICS.has(worst) ? " points" : ""}.`}
             />
           </p>
         </motion.div>

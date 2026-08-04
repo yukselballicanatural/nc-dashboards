@@ -53,9 +53,17 @@ function sumBy(fn: (a: CompanyAgentRow) => number): number {
   return COMPANY_AGENTS.reduce((s, a) => s + fn(a), 0);
 }
 
-export type BenchmarkMetric = "offers" | "deals" | "paidDeals";
+export type BenchmarkMetric = "offers" | "deals" | "paidDeals" | "slaCompliantPct";
 
-export const BENCHMARK_METRICS: readonly BenchmarkMetric[] = ["offers", "deals", "paidDeals"];
+export const BENCHMARK_METRICS: readonly BenchmarkMetric[] = [
+  "offers",
+  "deals",
+  "paidDeals",
+  "slaCompliantPct",
+];
+
+/** Yüzde (oran) olan metrikler — gösterimde "%" eklenir, dağılım/eksen buna göre biçimlenir. */
+export const PERCENT_METRICS: ReadonlySet<BenchmarkMetric> = new Set(["slaCompliantPct"]);
 
 export function metricLabel(metric: BenchmarkMetric, lang: Lang = "tr"): string {
   switch (metric) {
@@ -65,21 +73,57 @@ export function metricLabel(metric: BenchmarkMetric, lang: Lang = "tr"): string 
       return pick(lang, "Deal", "Deals");
     case "paidDeals":
       return pick(lang, "Paid (Ödemesi Alınan)", "Paid (Payment Received)");
+    case "slaCompliantPct":
+      return pick(lang, "15 dk SLA Uyumu", "15-min SLA Compliance");
   }
 }
 
-/** Toplam ve şirket ortalaması — istenen algoritma: Toplam / Toplam agent sayısı. */
+/**
+ * Toplam ve şirket ortalaması — istenen algoritma: Toplam / Toplam agent sayısı.
+ * `slaCompliantPct` bir oran (yüzde) olduğu için "toplam" kavramı agent
+ * başına oranların toplamıdır — ortalaması aynı bölme ile (Toplam / Toplam
+ * agent sayısı) şirket geneli ORTALAMA SLA uyum oranını verir.
+ */
 export const COMPANY_TOTALS: Record<BenchmarkMetric, number> = {
   offers: sumBy((a) => a.offers),
   deals: sumBy((a) => a.deals),
   paidDeals: sumBy((a) => a.paidDeals),
+  slaCompliantPct: sumBy((a) => a.slaCompliantPct),
 };
 
 export const COMPANY_AVERAGE: Record<BenchmarkMetric, number> = {
   offers: COMPANY_TOTALS.offers / COMPANY_AGENT_COUNT,
   deals: COMPANY_TOTALS.deals / COMPANY_AGENT_COUNT,
   paidDeals: COMPANY_TOTALS.paidDeals / COMPANY_AGENT_COUNT,
+  slaCompliantPct: COMPANY_TOTALS.slaCompliantPct / COMPANY_AGENT_COUNT,
 };
+
+/**
+ * SLA uyum oranı için 4 kademeli semantik durum (CLAUDE.md 3.1 durum
+ * renkleri): 🟢 hedefte (≥85) · 🟡 takip edilmeli (70-84.9) · 🟠 riskli
+ * (50-69.9) · 🔴 kritik (<50).
+ */
+export type SlaTier = "success" | "warning" | "risk" | "critical";
+
+export function slaTier(pct: number): SlaTier {
+  if (pct >= 85) return "success";
+  if (pct >= 70) return "warning";
+  if (pct >= 50) return "risk";
+  return "critical";
+}
+
+export function slaTierLabel(tier: SlaTier, lang: Lang = "tr"): string {
+  switch (tier) {
+    case "success":
+      return pick(lang, "Hedefte", "On target");
+    case "warning":
+      return pick(lang, "Takip Edilmeli", "Needs Attention");
+    case "risk":
+      return pick(lang, "Riskli", "At Risk");
+    case "critical":
+      return pick(lang, "Kritik", "Critical");
+  }
+}
 
 /** Dağılım özeti — detay sayfasındaki histogram/analiz için. */
 export interface MetricDistribution {
@@ -185,4 +229,5 @@ export const AGENT_BENCHMARKS: Record<BenchmarkMetric, MetricBenchmark> = {
   offers: computeBenchmark("offers"),
   deals: computeBenchmark("deals"),
   paidDeals: computeBenchmark("paidDeals"),
+  slaCompliantPct: computeBenchmark("slaCompliantPct"),
 };
