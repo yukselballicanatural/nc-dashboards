@@ -7,7 +7,6 @@ import {
   PhoneCall,
   ListChecks,
   Medal,
-  Scale,
   type LucideIcon,
 } from "lucide-react";
 import { useLang } from "@/components/i18n/LanguageProvider";
@@ -32,7 +31,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/agent", label: "Dashboard", labelEn: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/agent/aramalar", label: "Aramalar & Funnel", labelEn: "Calls & Funnel", icon: PhoneCall },
   { href: "/agent/follow-up", label: "Follow-up", labelEn: "Follow-up", icon: ListChecks },
-  { href: "/agent/karsilastirma", label: "Karşılaştırma", labelEn: "Benchmark", icon: Scale },
   { href: "/agent/performans", label: "Performansım", labelEn: "My Performance", icon: Medal },
 ];
 

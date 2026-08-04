@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { qualityKpis, shiftKpis, targetKpis } from "@/lib/mock/mock-data";
 import { earningsKpis } from "@/lib/mock/agent-earnings";
 import { T } from "@/components/i18n/T";
@@ -29,6 +27,8 @@ import { TargetPaceChart } from "@/components/agent/dashboard/TargetPaceChart";
 import { RankCard } from "@/components/agent/dashboard/RankCard";
 import { QualityTrendChart } from "@/components/agent/dashboard/QualityTrendChart";
 import { ShiftTable } from "@/components/agent/dashboard/ShiftTable";
+import { TeamComparisonBars } from "@/components/agent/dashboard/TeamComparisonBars";
+import { CompanyBenchmarkCard } from "@/components/agent/benchmark/CompanyBenchmarkCard";
 
 /**
  * Günlük Çalışma Ekranı — v2 4.1, kapsamlı tek-sayfa özet.
@@ -134,27 +134,8 @@ export default function AgentDashboardPage() {
               <RankCard />
             </div>
           </div>
-          <Link
-            href="/agent/karsilastirma"
-            className="group flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-4 shadow-soft transition-colors hover:border-brand/40"
-          >
-            <span className="flex flex-col gap-0.5">
-              <span className="font-display text-[13.5px] font-semibold text-fg">
-                <T tr="Takım ve Şirket Karşılaştırması" en="Team and Company Benchmark" />
-              </span>
-              <span className="font-body text-[11.5px] text-fg-secondary">
-                <T
-                  tr="Ulaşım/SLA takım ortalamana, Offer/Deal/Paid şirket geneline göre nerede olduğunu gör."
-                  en="See where you stand vs. team average (reach/SLA) and company average (Offer/Deal/Paid)."
-                />
-              </span>
-            </span>
-            <ArrowRight
-              size={16}
-              aria-hidden
-              className="shrink-0 text-brand transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
+          <TeamComparisonBars />
+          <CompanyBenchmarkCard />
         </div>
       </DashboardSection>
 
