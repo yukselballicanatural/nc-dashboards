@@ -1,6 +1,7 @@
 "use client";
 
-import { Info } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Info } from "lucide-react";
 import { qualityKpis, shiftKpis, targetKpis } from "@/lib/mock/mock-data";
 import { AGENT_REGION, earningsKpis } from "@/lib/mock/agent-earnings";
 import { T } from "@/components/i18n/T";
@@ -9,7 +10,6 @@ import { EarningsHeroBand } from "@/components/agent/earnings/EarningsHeroBand";
 import { DailyCommissionTable } from "@/components/agent/earnings/DailyCommissionTable";
 import { QuarterTierLadder } from "@/components/agent/earnings/QuarterTierLadder";
 import { YearProjectionChart } from "@/components/agent/earnings/YearProjectionChart";
-import { CompanyBenchmarkCard } from "@/components/agent/benchmark/CompanyBenchmarkCard";
 import { DashboardHeader } from "@/components/agent/dashboard/DashboardHeader";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/agent/dashboard/KpiGrid";
@@ -61,7 +61,27 @@ export default function PerformansPage() {
               <RankCard />
             </div>
           </div>
-          <CompanyBenchmarkCard />
+          <Link
+            href="/agent/karsilastirma"
+            className="group flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-4 shadow-soft transition-colors hover:border-brand/40"
+          >
+            <span className="flex flex-col gap-0.5">
+              <span className="font-display text-[13.5px] font-semibold text-fg">
+                <T tr="Takım ve Şirket Karşılaştırması" en="Team and Company Benchmark" />
+              </span>
+              <span className="font-body text-[11.5px] text-fg-secondary">
+                <T
+                  tr="Ulaşım/SLA takım ortalamana, Offer/Deal/Paid şirket geneline göre nerede olduğunu gör."
+                  en="See where you stand vs. team average (reach/SLA) and company average (Offer/Deal/Paid)."
+                />
+              </span>
+            </span>
+            <ArrowRight
+              size={16}
+              aria-hidden
+              className="shrink-0 text-brand transition-transform group-hover:translate-x-0.5"
+            />
+          </Link>
           {/* Prim kuralları notu — kaynak Admin parametre tabloları olacak */}
           <div className="flex items-start gap-2.5 rounded-card border border-border bg-surface px-4 py-3">
             <Info size={15} aria-hidden className="mt-0.5 shrink-0 text-indigo" />
