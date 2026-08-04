@@ -34,7 +34,7 @@ export function QuarterTierLadder() {
   const quarterMonthLabels = QUARTER_MONTHS[CURRENT_QUARTER].map((m) => months[m]).join(" · ");
 
   return (
-    <Card className="flex h-full flex-col gap-4">
+    <Card className="flex flex-col gap-4">
       <SectionTitle
         hint={t(
           "Çeyreklik ekstra prim oranı, çeyreğin AYLIK ORTALAMA satışına göre seçilir; tutar ise çeyreğin TOPLAM satışı üzerinden hesaplanır.",

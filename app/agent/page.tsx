@@ -145,7 +145,10 @@ export default function AgentDashboardPage() {
       >
         <div className="flex flex-col gap-4 sm:gap-5">
           <KpiGrid kpis={earningsKpis(lang)} />
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+          {/* items-start: iki tablonun boyu doğal olarak farklı (biri günlük satır
+              sayısına, diğeri sabit merdivene göre) — stretch ile birbirine eşitlenince
+              kısa olan kartta büyük boş alan oluşuyordu. */}
+          <div className="grid grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-12">
             <div className="lg:col-span-7">
               <DailyCommissionTable />
             </div>
