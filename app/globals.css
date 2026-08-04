@@ -20,8 +20,10 @@
 :root {
   /* Nötr zemin */
   --bg: #f7f8fb;
-  --surface: #ffffff;
-  --elevated: #ffffff;
+  /* Liquid Glass: kart/panel zeminleri yarı şeffaf — arkadaki içerik hafifçe
+     sızar, backdrop-blur ile buzlu cam hissi verir (bkz. dosya altı .glass-*). */
+  --surface: rgba(255, 255, 255, 0.66);
+  --elevated: rgba(255, 255, 255, 0.52);
   --border: #e7e9f2;
   --fg: #12172b;
   --fg-secondary: #6b7290;
@@ -54,9 +56,9 @@
 /* ---------------------------------------------------------------- */
 [data-theme="dark"] {
   --bg: #0d111c;
-  --surface: #161b2c;
-  --elevated: #1d2338;
-  --border: rgba(255, 255, 255, 0.08);
+  --surface: rgba(22, 27, 44, 0.58);
+  --elevated: rgba(29, 35, 56, 0.5);
+  --border: rgba(255, 255, 255, 0.1);
   --fg: #f4f6fb;
   --fg-secondary: #8b93b8;
   --fg-muted: #5c6690;
@@ -122,6 +124,14 @@
 /* ---------------------------------------------------------------- */
 body {
   background-color: var(--bg);
+  /* Liquid Glass arka planı — sabit, hafif renkli gradient mesh. Kart/panel/
+     sidebar gibi yarı şeffaf yüzeyler backdrop-blur ile bunu "buzlu cam"
+     olarak yakalar; düz bir zeminde şeffaflık görünmez/etkisiz kalırdı. */
+  background-image:
+    radial-gradient(52% 46% at 12% 0%, rgba(14, 169, 139, 0.14) 0%, transparent 62%),
+    radial-gradient(48% 42% at 92% 8%, rgba(124, 92, 252, 0.13) 0%, transparent 62%),
+    radial-gradient(55% 48% at 45% 100%, rgba(79, 99, 232, 0.09) 0%, transparent 62%);
+  background-attachment: fixed;
   color: var(--fg);
   font-family: var(--font-body);
   line-height: 1.5;
@@ -130,6 +140,26 @@ body {
   text-rendering: optimizeLegibility;
   /* Mobil: kaçak bir öğe yatay taşma yaratmasın (tablolar kendi içinde kaydırır) */
   overflow-x: hidden;
+}
+
+[data-theme="dark"] body {
+  background-image:
+    radial-gradient(52% 46% at 12% 0%, rgba(21, 214, 174, 0.16) 0%, transparent 62%),
+    radial-gradient(48% 42% at 92% 8%, rgba(155, 123, 255, 0.15) 0%, transparent 62%),
+    radial-gradient(55% 48% at 45% 100%, rgba(108, 124, 255, 0.12) 0%, transparent 62%);
+}
+
+/* ---------------------------------------------------------------- */
+/* LIQUID GLASS — bg-surface/bg-elevated kullanan HER yüzeye otomatik   */
+/* backdrop-blur + vibrancy uygulanır (kart, sidebar, dropdown, modal,  */
+/* drawer...). Token'lar zaten yarı şeffaf (bkz. :root/[data-theme])    */
+/* olduğundan tek eksik parça blur — bunu tek yerden, tüm sistem için   */
+/* veriyoruz; her bileşende tekrar tekrar class eklemeye gerek kalmaz.  */
+/* ---------------------------------------------------------------- */
+[class*="bg-surface"],
+[class*="bg-elevated"] {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 
 /* Erişilebilirlik: görünür focus (CLAUDE.md 7) — tema rengine uyarlanır */
