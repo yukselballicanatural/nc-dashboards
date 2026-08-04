@@ -112,7 +112,9 @@ const MONEY_BG: React.CSSProperties = {
   ].join(", "),
 };
 
-export function EarningsHeroBand() {
+export function EarningsHeroBand({
+  showIdentity = true,
+}: { showIdentity?: boolean } = {}) {
   const { t, lang } = useLang();
   const identity = useIdentity(AGENT_PROFILE);
   const firstName = identity.name.split(" ")[0];
@@ -147,28 +149,32 @@ export function EarningsHeroBand() {
       )}
       className="group relative cursor-pointer overflow-hidden rounded-card px-6 py-6 shadow-elevated outline-none transition-shadow duration-150 hover:shadow-[0_22px_52px_rgba(11,95,82,0.32)] focus-visible:ring-2 focus-visible:ring-white/60 sm:px-8 sm:py-7"
     >
-      {/* Kimlik satırı — ince, para rakamının üstünde tek bir çizgi */}
-      <div className="relative mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="font-display text-[16px] font-bold leading-none text-white">
-            <T tr={`Merhaba, ${firstName}`} en={`Hello, ${firstName}`} />
-          </h1>
-          <span className="flex items-center gap-1.5 font-body text-[11.5px] text-white/60">
-            <CalendarDays size={12} aria-hidden />
-            {mockDateLabel(lang)}
-          </span>
+      {/* Kimlik satırı — ince, para rakamının üstünde tek bir çizgi.
+          Sayfada zaten kendi karşılama/başlık bandı varsa (ör. Performansım)
+          `showIdentity={false}` ile burada tekrarlanmaz. */}
+      {showIdentity && (
+        <div className="relative mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="font-display text-[16px] font-bold leading-none text-white">
+              <T tr={`Merhaba, ${firstName}`} en={`Hello, ${firstName}`} />
+            </h1>
+            <span className="flex items-center gap-1.5 font-body text-[11.5px] text-white/60">
+              <CalendarDays size={12} aria-hidden />
+              {mockDateLabel(lang)}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-pill bg-white/20 px-2.5 py-1 font-body text-[10.5px] font-semibold text-white">
+              {identity.role}
+            </span>
+            <Chip icon={Users}>{identity.team}</Chip>
+            <Chip icon={MapPin}>{identity.location}</Chip>
+            <Chip icon={Clock}>
+              <T tr="09:00–18:00 vardiya" en="09:00–18:00 shift" />
+            </Chip>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-pill bg-white/20 px-2.5 py-1 font-body text-[10.5px] font-semibold text-white">
-            {identity.role}
-          </span>
-          <Chip icon={Users}>{identity.team}</Chip>
-          <Chip icon={MapPin}>{identity.location}</Chip>
-          <Chip icon={Clock}>
-            <T tr="09:00–18:00 vardiya" en="09:00–18:00 shift" />
-          </Chip>
-        </div>
-      </div>
+      )}
 
       <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Sol: ana rakam */}

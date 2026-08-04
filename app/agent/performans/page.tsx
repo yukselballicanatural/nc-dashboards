@@ -37,8 +37,10 @@ export default function PerformansPage() {
         }
       />
 
-      {/* PARA EN BAŞTA — prim bandı burada da ilk sırada (v2 4.7). */}
-      <EarningsHeroBand />
+      {/* PARA EN BAŞTA — prim bandı burada da ilk sırada (v2 4.7).
+          Karşılama satırı ("Merhaba, ...") gösterilmez — o zaten Dashboard'da
+          var, burada DashboardHeader başlığı yeterli. */}
+      <EarningsHeroBand showIdentity={false} />
 
       {/* HEDEF VE PRİM — v2 4.7 */}
       <DashboardSection
