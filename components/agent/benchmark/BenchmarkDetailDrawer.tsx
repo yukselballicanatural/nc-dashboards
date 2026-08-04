@@ -11,6 +11,7 @@ import {
   type TooltipContentProps,
 } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import { motion } from "framer-motion";
 import { AlertTriangle, ArrowDown, ArrowUp, Trophy } from "lucide-react";
 import {
   AGENT_BENCHMARKS,
@@ -24,6 +25,8 @@ import {
   type MetricBenchmark,
 } from "@/lib/mock/company-benchmark";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { useCountUp } from "@/lib/hooks/useCountUp";
+import { DURATION, EASING, STAGGER } from "@/lib/motion";
 import { formatNumber } from "@/lib/utils/format";
 import { useLang } from "@/components/i18n/LanguageProvider";
 import { T } from "@/components/i18n/T";
@@ -32,6 +35,40 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { SidePanel } from "@/components/ui/SidePanel";
 import { AXIS_TICK, TooltipFrame } from "@/components/ui/ChartBits";
 import { cn } from "@/lib/utils/cn";
+
+/** Hover'da vurgulanan bar — dolgu tam opak + ince kontur "canlı" his verir. */
+const ACTIVE_BAR = { fillOpacity: 1, stroke: "var(--fg)", strokeWidth: 1, strokeOpacity: 0.25 };
+
+/** Sürükleyici giriş: panel her açıldığında kartlar sırayla belirir. */
+function useEntranceVariants() {
+  const reduced = usePrefersReducedMotion();
+  return {
+    container: {
+      hidden: {},
+      visible: { transition: { staggerChildren: reduced ? 0 : STAGGER.children * 6 } },
+    },
+    item: {
+      hidden: reduced ? { opacity: 1 } : { opacity: 0, y: STAGGER.rise * 2 },
+      visible: { opacity: 1, y: 0, transition: { duration: reduced ? 0 : DURATION.cardEnter * 1.6, ease: EASING.out } },
+    },
+  };
+}
+
+/** Bir sayının 0'dan hedefe saydığı, mono rakamlı satır. */
+function CountUpValue({
+  value,
+  digits = 0,
+  className,
+  prefix = "",
+}: {
+  value: number;
+  digits?: number;
+  className?: string;
+  prefix?: string;
+}) {
+  const animated = useCountUp(value, 900);
+  return <span className={className}>{prefix}{formatNumber(animated, digits)}</span>;
+}
 
 export interface BenchmarkDetailDrawerProps {
   open: boolean;
@@ -106,6 +143,7 @@ function ComparisonChart({ b, color }: { b: MetricBenchmark; color: string }) {
             isAnimationActive={!reduced}
             animationDuration={700}
             animationEasing="ease-out"
+            activeBar={ACTIVE_BAR}
             label={{
               position: "right",
               fontSize: 11,
@@ -159,6 +197,7 @@ function DistributionChart({ b, color }: { b: MetricBenchmark; color: string }) 
             isAnimationActive={!reduced}
             animationDuration={700}
             animationEasing="ease-out"
+            activeBar={ACTIVE_BAR}
           >
             {data.map((bucket) => (
               <Cell key={bucket.rangeLabel} fill={bucket.containsAgent ? color : "var(--neutral)"} opacity={bucket.containsAgent ? 1 : 0.3} />
@@ -214,6 +253,7 @@ function TeamRankChart({ metric, color }: { metric: BenchmarkMetric; color: stri
             isAnimationActive={!reduced}
             animationDuration={700}
             animationEasing="ease-out"
+            activeBar={ACTIVE_BAR}
           >
             {data.map((row) => (
               <Cell key={row.label} fill={row.isMe ? color : "var(--neutral)"} opacity={row.isMe ? 1 : 0.35} />
@@ -232,11 +272,11 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
   const aheadOfCompany = b.vsCompanyPct >= 0;
 
   return (
-    <Card className="flex flex-col gap-4">
+    <Card hoverable className="flex flex-col gap-4">
       <SectionTitle
         aside={
           <span className={cn("shrink-0 rounded-pill px-2.5 py-1 font-mono text-[11px] font-semibold", styles.chip)}>
-            {formatNumber(b.agentValue)}
+            <CountUpValue value={b.agentValue} />
           </span>
         }
       >
@@ -250,7 +290,7 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
             <T tr="Şirket Sıralaman" en="Company Rank" />
           </span>
           <span className="font-mono text-[15px] font-bold text-fg">
-            #{formatNumber(b.companyRank)} <span className="text-fg-muted">/ {formatNumber(b.companyTotal)}</span>
+            #<CountUpValue value={b.companyRank} /> <span className="text-fg-muted">/ {formatNumber(b.companyTotal)}</span>
           </span>
           <span className="font-body text-[10.5px] text-fg-secondary">
             <T
@@ -264,7 +304,7 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
             <T tr="Takım Sıralaman" en="Team Rank" />
           </span>
           <span className="font-mono text-[15px] font-bold text-fg">
-            #{formatNumber(b.teamRank)} <span className="text-fg-muted">/ {formatNumber(b.teamTotal)}</span>
+            #<CountUpValue value={b.teamRank} /> <span className="text-fg-muted">/ {formatNumber(b.teamTotal)}</span>
           </span>
           <span className="font-body text-[10.5px] text-fg-secondary">{BENCHMARK_TEAM_NAME}</span>
         </div>
@@ -322,6 +362,7 @@ function MetricDeepCard({ metric }: { metric: BenchmarkMetric }) {
 
 export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerProps) {
   const { t } = useLang();
+  const variants = useEntranceVariants();
 
   const strongest = [...BENCHMARK_METRICS].sort(
     (a, b) => AGENT_BENCHMARKS[b].vsCompanyPct - AGENT_BENCHMARKS[a].vsCompanyPct,
@@ -340,52 +381,66 @@ export function BenchmarkDetailDrawer({ open, onClose }: BenchmarkDetailDrawerPr
         `${BENCHMARK_TEAM_NAME} · company-wide pool of ${formatNumber(COMPANY_AGENT_COUNT)} agents`,
       )}
     >
-      {/* Özet şerit */}
-      <div className="grid grid-cols-3 gap-3">
-        {BENCHMARK_METRICS.map((metric) => {
-          const b = AGENT_BENCHMARKS[metric];
-          const ahead = b.vsCompanyPct >= 0;
-          return (
-            <div
-              key={metric}
-              className="flex flex-col gap-0.5 rounded-control border border-border bg-surface px-3 py-2.5"
-            >
-              <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">
-                {metricLabel(metric, "tr")}
-              </span>
-              <span className="font-mono text-[16px] font-bold text-fg">{formatNumber(b.agentValue)}</span>
-              <span className={cn("font-mono text-[10.5px] font-semibold", ahead ? "text-success" : "text-critical")}>
-                {ahead ? "+" : ""}
-                {formatNumber(b.vsCompanyPct, 1)}%
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Genel analiz */}
-      <div
-        className={cn(
-          "flex items-start gap-2.5 rounded-card border px-4 py-3",
-          aboveCount >= 2 ? "border-success/35 bg-success/8" : "border-brand-secondary/35 bg-brand-secondary/10",
-        )}
+      {/* Panel her açıldığında kartlar sırayla (stagger) belirir — "canlı" his. */}
+      <motion.div
+        key={open ? "open" : "closed"}
+        variants={variants.container}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col gap-5"
       >
-        {aboveCount >= 2 ? (
-          <Trophy size={16} aria-hidden className="mt-0.5 shrink-0 text-success" />
-        ) : (
-          <AlertTriangle size={16} aria-hidden className="mt-0.5 shrink-0 text-brand-secondary" />
-        )}
-        <p className="font-body text-[12.5px] leading-relaxed text-fg">
-          <T
-            tr={`3 metrikten ${aboveCount}'inde şirket ortalamasının üzerindesin. En güçlü olduğun metrik ${metricLabel(best, "tr")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — en çok gelişim alanın ${metricLabel(worst, "tr")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). ${metricLabel(worst, "tr")}'de şirket ortalamasını yakalamak için aylık ortalama ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} birim daha gerekiyor.`}
-            en={`You're above the company average in ${aboveCount} of 3 metrics. Your strongest metric is ${metricLabel(best, "en")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — your biggest growth area is ${metricLabel(worst, "en")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). Closing the gap to the company average there needs about ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} more.`}
-          />
-        </p>
-      </div>
+        {/* Özet şerit */}
+        <motion.div variants={variants.item} className="grid grid-cols-3 gap-3">
+          {BENCHMARK_METRICS.map((metric) => {
+            const b = AGENT_BENCHMARKS[metric];
+            const ahead = b.vsCompanyPct >= 0;
+            return (
+              <div
+                key={metric}
+                className="flex flex-col gap-0.5 rounded-control border border-border bg-surface px-3 py-2.5 transition-colors hover:border-brand/40 hover:bg-brand/5"
+              >
+                <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-fg-muted">
+                  {metricLabel(metric, "tr")}
+                </span>
+                <span className="font-mono text-[16px] font-bold text-fg">
+                  <CountUpValue value={b.agentValue} />
+                </span>
+                <span className={cn("font-mono text-[10.5px] font-semibold", ahead ? "text-success" : "text-critical")}>
+                  {ahead ? "+" : ""}
+                  {formatNumber(b.vsCompanyPct, 1)}%
+                </span>
+              </div>
+            );
+          })}
+        </motion.div>
 
-      {BENCHMARK_METRICS.map((metric) => (
-        <MetricDeepCard key={metric} metric={metric} />
-      ))}
+        {/* Genel analiz */}
+        <motion.div
+          variants={variants.item}
+          className={cn(
+            "flex items-start gap-2.5 rounded-card border px-4 py-3",
+            aboveCount >= 2 ? "border-success/35 bg-success/8" : "border-brand-secondary/35 bg-brand-secondary/10",
+          )}
+        >
+          {aboveCount >= 2 ? (
+            <Trophy size={16} aria-hidden className="mt-0.5 shrink-0 text-success" />
+          ) : (
+            <AlertTriangle size={16} aria-hidden className="mt-0.5 shrink-0 text-brand-secondary" />
+          )}
+          <p className="font-body text-[12.5px] leading-relaxed text-fg">
+            <T
+              tr={`3 metrikten ${aboveCount}'inde şirket ortalamasının üzerindesin. En güçlü olduğun metrik ${metricLabel(best, "tr")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — en çok gelişim alanın ${metricLabel(worst, "tr")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). ${metricLabel(worst, "tr")}'de şirket ortalamasını yakalamak için aylık ortalama ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} birim daha gerekiyor.`}
+              en={`You're above the company average in ${aboveCount} of 3 metrics. Your strongest metric is ${metricLabel(best, "en")} (${AGENT_BENCHMARKS[best].vsCompanyPct >= 0 ? "+" : ""}${AGENT_BENCHMARKS[best].vsCompanyPct.toFixed(1)}%) — your biggest growth area is ${metricLabel(worst, "en")} (${AGENT_BENCHMARKS[worst].vsCompanyPct.toFixed(1)}%). Closing the gap to the company average there needs about ${formatNumber(Math.max(0, Math.ceil(AGENT_BENCHMARKS[worst].companyAverage - AGENT_BENCHMARKS[worst].agentValue)))} more.`}
+            />
+          </p>
+        </motion.div>
+
+        {BENCHMARK_METRICS.map((metric) => (
+          <motion.div key={metric} variants={variants.item}>
+            <MetricDeepCard metric={metric} />
+          </motion.div>
+        ))}
+      </motion.div>
     </SidePanel>
   );
 }
