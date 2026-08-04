@@ -30,6 +30,7 @@ import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { SidePanel } from "@/components/ui/SidePanel";
 import { cn } from "@/lib/utils/cn";
+import { CommissionCalculator } from "./CommissionCalculator";
 
 /**
  * PRİM DETAY SAYFASI — para bandına tıklanınca sağdan açılan Notion-tarzı
@@ -170,6 +171,9 @@ export function EarningsDetailDrawer({ open, onClose }: EarningsDetailDrawerProp
           </table>
         </div>
       </Card>
+
+      {/* 1.5 — Prim hesaplayıcı (interaktif senaryo) */}
+      <CommissionCalculator />
 
       {/* 2 — Tüm ayın ham dökümü */}
       <Card className="flex flex-col gap-3">
