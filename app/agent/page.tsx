@@ -13,7 +13,6 @@ import { DashboardSection } from "@/components/agent/dashboard/DashboardSection"
 import { KpiGrid } from "@/components/agent/dashboard/KpiGrid";
 import { OverviewKpiGrid } from "@/components/agent/dashboard/OverviewKpiGrid";
 import { CallKpiGrid } from "@/components/agent/dashboard/CallKpiGrid";
-import { HourlyCallChart } from "@/components/agent/dashboard/HourlyCallChart";
 import { ActionCenter } from "@/components/agent/dashboard/ActionCenter";
 import { MiniFunnelStrip } from "@/components/agent/dashboard/MiniFunnelStrip";
 import { DailyTrendChart } from "@/components/agent/dashboard/DailyTrendChart";
@@ -54,9 +53,11 @@ export default function AgentDashboardPage() {
       >
         <div className="flex flex-col gap-4 sm:gap-5">
           <OverviewKpiGrid />
+          {/* Saatlik arama grafiği kaldırıldı (kalabalığı azaltmak için) —
+              yerine daha öncelikli prim (çeyrek dilim merdiveni) metriği geldi. */}
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <HourlyCallChart />
+              <QuarterTierLadder />
             </div>
             <div className="lg:col-span-4">
               <ActionCenter />
