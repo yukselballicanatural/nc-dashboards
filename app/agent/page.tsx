@@ -39,9 +39,14 @@ export default function AgentDashboardPage() {
   const { lang } = useLang();
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
-      {/* FUNNEL EN ÜSTTE — satış hunisi ekranın tam üstünde; her aşamanın
-          yüzdesel dönüşümü + şirket ortalamasına göre renk kodlu kıyası
-          (bkz. FullFunnelChart, company-benchmark.ts) ilk görülen şey olsun. */}
+      {/* KARŞILAMA HER ZAMAN EN ÜSTTE — Dashboard "Merhaba, ..." ile
+          başlamalı (kullanıcı kararı); prim bandı kimlik/karşılamayı da
+          içeriyor (bkz. EarningsHeroBand notu). */}
+      <EarningsHeroBand />
+
+      {/* FUNNEL — satış hunisi; her aşamanın yüzdesel dönüşümü + şirket
+          ortalamasına göre renk kodlu kıyası (bkz. FullFunnelChart,
+          company-benchmark.ts). */}
       <DashboardSection
         id="funnel"
         eyebrow={<T tr="Funnel & Fırsatlar" en="Funnel & Opportunities" />}
@@ -59,10 +64,6 @@ export default function AgentDashboardPage() {
           <ConversionTables />
         </div>
       </DashboardSection>
-
-      {/* PARA EN BAŞTA — prim bandı; kimlik/karşılama da bunun içinde tek
-          bir bant olarak (bkz. EarningsHeroBand notu). */}
-      <EarningsHeroBand />
 
       <InsightStrip />
 
