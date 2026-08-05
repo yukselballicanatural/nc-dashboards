@@ -12,16 +12,11 @@ import { InsightStrip } from "@/components/agent/dashboard/InsightStrip";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/agent/dashboard/KpiGrid";
 import { OverviewKpiGrid } from "@/components/agent/dashboard/OverviewKpiGrid";
-import { CallKpiGrid } from "@/components/agent/dashboard/CallKpiGrid";
+import { LiveCallStrip } from "@/components/agent/dashboard/LiveCallStrip";
 import { ActionCenter } from "@/components/agent/dashboard/ActionCenter";
 import { MiniFunnelStrip } from "@/components/agent/dashboard/MiniFunnelStrip";
-import { DailyTrendChart } from "@/components/agent/dashboard/DailyTrendChart";
-import { SlaConnectionGauges } from "@/components/agent/dashboard/SlaConnectionGauges";
-import { SpeedToLeadChart } from "@/components/agent/dashboard/SpeedToLeadChart";
-import { HourlyReachChart } from "@/components/agent/dashboard/HourlyReachChart";
 import { FullFunnelChart } from "@/components/agent/dashboard/FullFunnelChart";
 import { CallbackList } from "@/components/agent/dashboard/CallbackList";
-import { ConversionTables } from "@/components/agent/dashboard/ConversionTables";
 import { GoalGauge } from "@/components/agent/dashboard/GoalGauge";
 import { TargetPaceChart } from "@/components/agent/dashboard/TargetPaceChart";
 import { RankCard } from "@/components/agent/dashboard/RankCard";
@@ -44,24 +39,25 @@ export default function AgentDashboardPage() {
           içeriyor (bkz. EarningsHeroBand notu). */}
       <EarningsHeroBand />
 
+      {/* ANLIK ÇAĞRI — takımın canlı çağrı durumu + payın ve takım içi sıran. */}
+      <LiveCallStrip />
+
       {/* FUNNEL — satış hunisi; her aşamanın yüzdesel dönüşümü + şirket
           ortalamasına göre renk kodlu kıyası (bkz. FullFunnelChart,
-          company-benchmark.ts). */}
+          company-benchmark.ts). Kırılım tabloları (ConversionTables) burada
+          gösterilmez — "Aramalar & Funnel" sayfasında zaten var. */}
       <DashboardSection
         id="funnel"
         eyebrow={<T tr="Funnel & Fırsatlar" en="Funnel & Opportunities" />}
         title={<T tr="Fırsatların Nerede?" en="Where Are Your Opportunities?" />}
       >
-        <div className="flex flex-col gap-4 sm:gap-5">
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <FullFunnelChart />
-            </div>
-            <div className="lg:col-span-5">
-              <CallbackList />
-            </div>
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <FullFunnelChart />
           </div>
-          <ConversionTables />
+          <div className="lg:col-span-5">
+            <CallbackList />
+          </div>
         </div>
       </DashboardSection>
 
@@ -89,34 +85,13 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 2 — ARAMA & ULAŞIM */}
-      <DashboardSection
-        id="aramalar"
-        eyebrow={<T tr="Arama & Ulaşım" en="Calls & Reach" />}
-        title={<T tr="Arama Performansın" en="Your Call Performance" />}
-      >
-        <div className="flex flex-col gap-4 sm:gap-5">
-          <CallKpiGrid />
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <DailyTrendChart />
-            </div>
-            <div className="lg:col-span-5">
-              <SlaConnectionGauges />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <SpeedToLeadChart />
-            </div>
-            <div className="lg:col-span-5">
-              <HourlyReachChart />
-            </div>
-          </div>
-        </div>
-      </DashboardSection>
+      {/* NOT: "Arama & Ulaşım" bölümü Dashboard'dan kaldırıldı (kullanıcı:
+          kalabalık oldu). İçindeki beş bileşenin TAMAMI — CallKpiGrid,
+          DailyTrendChart, SlaConnectionGauges, SpeedToLeadChart,
+          HourlyReachChart — "Aramalar & Funnel" sayfasında birebir duruyor;
+          Dashboard'daki anlık çağrı kartı (LiveCallStrip) bakışta yeterli. */}
 
-      {/* 3 — HEDEF & KAZANÇ */}
+      {/* 2 — HEDEF & KAZANÇ */}
       <DashboardSection
         id="hedef"
         eyebrow={<T tr="Hedef & Kazanç" en="Target & Earnings" />}
@@ -140,7 +115,7 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 4 — PRİM & KOMİSYON */}
+      {/* 3 — PRİM & KOMİSYON */}
       <DashboardSection
         id="prim"
         eyebrow={<T tr="Prim & Komisyon" en="Commission & Bonus" />}
@@ -158,7 +133,7 @@ export default function AgentDashboardPage() {
         </div>
       </DashboardSection>
 
-      {/* 5 — KALİTE & VARDİYA */}
+      {/* 4 — KALİTE & VARDİYA */}
       <DashboardSection
         id="kalite"
         eyebrow={<T tr="Kalite & Vardiya" en="Quality & Shift" />}

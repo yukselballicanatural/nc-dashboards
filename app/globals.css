@@ -206,6 +206,43 @@ body {
   backdrop-filter: blur(6px);
 }
 
+/* ---------------------------------------------------------------- */
+/* CANLI (anlık) gösterge nabzı — LiveCallStrip.                      */
+/* Dekoratif değil FONKSİYONEL: verinin canlı aktığını bildirir, bu   */
+/* yüzden "tek yerde cesur ol" kuralını (Bölüm 6) ihlal etmez.        */
+/* prefers-reduced-motion global blok tarafından durdurulur.          */
+/* ---------------------------------------------------------------- */
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.75);
+  }
+}
+
+.live-dot {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+/* Hatta olan takım üyesi noktası — dışa doğru yayılan halka */
+@keyframes live-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+.live-ring {
+  animation: live-ring 1.8s ease-out infinite;
+}
+
 /* Accent gradient dolgulu KPI/tile'lar için (beyaz metin, koyu uçlar) */
 .fill-brand {
   background-image: linear-gradient(135deg, #0ea98b 0%, #067a62 100%);
