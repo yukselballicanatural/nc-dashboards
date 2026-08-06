@@ -199,23 +199,36 @@ export interface PdksSummary {
  */
 const HOLIDAY_KEYS = new Set(["2026-07-15"]);
 
-/** Planlı yıllık izin günleri. */
-const LEAVE_KEYS = new Set(["2026-07-20"]);
+/**
+ * KİŞİYE ÖZEL TAKVİM. Resmi tatil tüm şirkete ortaktır, ama izin ve
+ * devamsızlık kişiseldir — bu yüzden gün kümeleri parametre olarak gelir.
+ * Ortak (statik) küme kullanılsa takımın 12 danışmanı da aynı gün devamsız
+ * görünürdü.
+ */
+export interface PdksPersonalCalendar {
+  /** Planlı yıllık izin günleri ("YYYY-MM-DD"). */
+  leaveKeys: ReadonlySet<string>;
+  /** Mazeretsiz devamsız günler ("YYYY-MM-DD"). */
+  absentKeys: ReadonlySet<string>;
+}
 
-/** Mazeretsiz devamsız gün (UI'ın bu durumu da göstermesi için 1 gün). */
-const ABSENT_KEYS = new Set(["2026-07-28"]);
+/** Agent panelinin referans profili (Callum) — mevcut davranış korunur. */
+const AGENT_CALENDAR: PdksPersonalCalendar = {
+  leaveKeys: new Set(["2026-07-20"]),
+  absentKeys: new Set(["2026-07-28"]),
+};
 
-function dayKey(ts: number): string {
+export function dayKey(ts: number): string {
   return new Date(ts + TZ_OFFSET).toISOString().slice(0, 10);
 }
 
-function resolveDayType(ts: number): PdksDayType {
+function resolveDayType(ts: number, calendar: PdksPersonalCalendar): PdksDayType {
   const wd = weekdayIndex(ts);
   if (wd === 0 || wd === 6) return "weekend";
   const key = dayKey(ts);
   if (HOLIDAY_KEYS.has(key)) return "holiday";
-  if (LEAVE_KEYS.has(key)) return "leave";
-  if (ABSENT_KEYS.has(key)) return "absent";
+  if (calendar.leaveKeys.has(key)) return "leave";
+  if (calendar.absentKeys.has(key)) return "absent";
   return "workday";
 }
 
@@ -281,7 +294,7 @@ const WEEKDAYS_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
 const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /** Ham gün — dile bağımlı etiketler `pdksSummary(lang)` içinde eklenir. */
-interface RawDay {
+export interface RawDay {
   ts: number;
   type: PdksDayType;
   events: TurnstileEvent[];
@@ -361,7 +374,7 @@ function generateWorkday(dayStart: number, rng: Rng): RawDay {
  * `BREAK_COUNTED_INSIDE_MINUTES` üstündeki kısmı turnike DIŞI sayılır.
  */
 function deriveFromShiftRecord(
-  record: (typeof SHIFT_WEEK_TIMESTAMPED)[number],
+  record: ShiftSeedRecord,
   type: PdksDayType,
   rng: Rng,
 ): RawDay {
@@ -410,21 +423,42 @@ function emptyDay(dayStart: number, type: PdksDayType): RawDay {
 /* Ham seri — modül yüklenirken BİR KEZ                                */
 /* ------------------------------------------------------------------ */
 
-const TODAY_START = startOfDay(MOCK_NOW);
+export const TODAY_START = startOfDay(MOCK_NOW);
 
-const RAW_DAYS: RawDay[] = (() => {
-  const rng = new Rng(414_207);
+/** `deriveFromShiftRecord` için gereken asgari vardiya alanları. */
+export interface ShiftSeedRecord {
+  ts: number;
+  actualIn: string;
+  actualOut: string;
+  lateMinutes: number;
+  breakMinutes: number;
+}
+
+/**
+ * 30 günlük ham PDKS serisi üretir. Son 7 gün, verilen vardiya kayıtlarından
+ * türetilir (giriş/çıkış saatleri birebir korunur → panelin geri kalanıyla
+ * çelişmez); öncesi verilen tohumla üretilir.
+ *
+ * Takım Lideri panelindeki her agent için de bu fonksiyon kullanılır — tek
+ * kural motoru, tek doğruluk kaynağı (bkz. lib/mock/team-pdks.ts).
+ */
+export function buildRawDays(
+  seed: number,
+  shiftRecords: readonly ShiftSeedRecord[],
+  calendar: PdksPersonalCalendar = AGENT_CALENDAR,
+): RawDay[] {
+  const rng = new Rng(seed);
   const days: RawDay[] = [];
 
   /** Son 7 günün tarih damgası → mevcut vardiya kaydı. */
-  const shiftByDay = new Map<number, (typeof SHIFT_WEEK_TIMESTAMPED)[number]>();
-  for (const record of SHIFT_WEEK_TIMESTAMPED) {
+  const shiftByDay = new Map<number, ShiftSeedRecord>();
+  for (const record of shiftRecords) {
     shiftByDay.set(startOfDay(record.ts), record);
   }
 
   for (let i = WINDOW_DAYS - 1; i >= 0; i--) {
     const dayStart = TODAY_START - i * DAY;
-    const type = resolveDayType(dayStart);
+    const type = resolveDayType(dayStart, calendar);
     const record = shiftByDay.get(dayStart);
 
     if (record) {
@@ -442,7 +476,9 @@ const RAW_DAYS: RawDay[] = (() => {
   }
 
   return days;
-})();
+}
+
+const RAW_DAYS: RawDay[] = buildRawDays(414_207, SHIFT_WEEK_TIMESTAMPED);
 
 /* ------------------------------------------------------------------ */
 /* Özet — dile göre etiketlenmiş                                       */
@@ -453,11 +489,12 @@ function targetFor(type: PdksDayType): number {
   return type === "workday" || type === "absent" ? DAILY_TARGET_MINUTES : 0;
 }
 
-export function pdksSummary(lang: Lang = "tr"): PdksSummary {
+/** Ham günleri dile göre etiketleyip özetler — agent ve takım için ortak. */
+export function summarizeRawDays(rawDays: readonly RawDay[], lang: Lang = "tr"): PdksSummary {
   const months = lang === "en" ? MONTHS_EN : MONTHS_TR;
   const weekdays = lang === "en" ? WEEKDAYS_EN : WEEKDAYS_TR;
 
-  const days: PdksDay[] = RAW_DAYS.map((raw) => {
+  const days: PdksDay[] = rawDays.map((raw) => {
     const iso = new Date(raw.ts + TZ_OFFSET).toISOString();
     const targetMinutes = targetFor(raw.type);
     const balanceMinutes = raw.insideMinutes - targetMinutes;
@@ -537,6 +574,11 @@ export function pdksSummary(lang: Lang = "tr"): PdksSummary {
     gateUsage,
     cumulative,
   };
+}
+
+/** Agent panelinin (Callum) PDKS özeti. */
+export function pdksSummary(lang: Lang = "tr"): PdksSummary {
+  return summarizeRawDays(RAW_DAYS, lang);
 }
 
 /* ------------------------------------------------------------------ */

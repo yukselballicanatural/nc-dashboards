@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { TEAM_SHIFT_ROWS } from "@/lib/mock/team-monthly";
 import { useLang } from "@/components/i18n/LanguageProvider";
 import { T } from "@/components/i18n/T";
@@ -26,7 +28,18 @@ export function TeamShiftTable() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint={t("Eksik Çalışma = planlanan 8 sa/gün net çalışma ile gerçekleşen arasındaki haftalık toplam fark. En çok eksiği olan en üstte.", "Shortfall = the weekly total difference between the planned 8 net hrs/day and actual hours worked. Largest shortfall first.")}>
+      <SectionTitle
+        hint={t("Eksik Çalışma = planlanan 8 sa/gün net çalışma ile gerçekleşen arasındaki haftalık toplam fark. En çok eksiği olan en üstte.", "Shortfall = the weekly total difference between the planned 8 net hrs/day and actual hours worked. Largest shortfall first.")}
+        aside={
+          <Link
+            href="/team-leader/pdks"
+            className="group flex shrink-0 items-center gap-1 font-body text-[11px] font-semibold text-brand transition-colors hover:text-brand-secondary"
+          >
+            <T tr="Turnike dökümü ve eksik mesai" en="Turnstile log and missing hours" />
+            <ArrowRight size={13} aria-hidden className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        }
+      >
         <T tr="Agent Bazlı Vardiya Özeti (7 Gün)" en="Shift Summary by Agent (7 Days)" />
       </SectionTitle>
 

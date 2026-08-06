@@ -8,6 +8,7 @@ import {
   Activity,
   Filter,
   ListChecks,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/team-leader/saatlik-aktivite", label: "Saatlik Aktivite", labelEn: "Hourly Activity", icon: Activity },
   { href: "/team-leader/funnel-backlog", label: "Funnel & Backlog", labelEn: "Funnel & Backlog", icon: Filter },
   { href: "/team-leader/aksiyon-merkezi", label: "Aksiyon Merkezi", labelEn: "Action Center", icon: ListChecks },
+  { href: "/team-leader/pdks", label: "Mesai & PDKS", labelEn: "Attendance & Hours", icon: Clock },
 ];
 
 export function NavTabs({ collapsed = false }: { collapsed?: boolean } = {}) {

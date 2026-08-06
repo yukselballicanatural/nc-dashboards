@@ -3,6 +3,8 @@ import { T } from "@/components/i18n/T";
 import { DashboardSection } from "@/components/agent/dashboard/DashboardSection";
 import { TeamHeroHeader } from "@/components/team-leader/dashboard/TeamHeroHeader";
 import { TeamAssistantCard } from "@/components/team-leader/dashboard/TeamAssistantCard";
+import { TeamLiveCallStrip } from "@/components/team-leader/dashboard/TeamLiveCallStrip";
+import { TeamFunnelChart } from "@/components/team-leader/funnel/TeamFunnelChart";
 import { TeamKpiGrid } from "@/components/team-leader/dashboard/TeamKpiGrid";
 import { TeamConversionKpis } from "@/components/team-leader/dashboard/TeamConversionKpis";
 import { TeamTargetGauge } from "@/components/team-leader/dashboard/TeamTargetGauge";
@@ -35,10 +37,22 @@ export const metadata: Metadata = {
 export default function TeamLeaderOverviewPage() {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
-      {/* PARA EN BAŞTA — TL prim bandı sayfanın ilk öğesi. */}
+      {/* KARŞILAMA EN BAŞTA — Agent panelinde alınan karar (dashboard
+          "Merhaba, ..." ile başlamalı) TL'de de geçerli; prim bandı hemen
+          altında gelir. */}
+      <TeamHeroHeader />
       <TeamLeaderEarningsBand />
 
-      <TeamHeroHeader />
+      {/* Anlık çağrı durumu — "şu an kim çalışıyor, kim boş" en üstte. */}
+      <TeamLiveCallStrip />
+
+      {/* Funnel ekranın üstünde (Agent paneliyle aynı karar): her aşamanın
+          geçiş oranı ve şirket ortalamasına göre renk kodlu farkı. Aynı
+          bileşen Funnel & Backlog sayfasında da kullanılır — tek kaynak. */}
+      <DashboardSection id="funnel" eyebrow={<T tr="Funnel" en="Funnel" />} title={<T tr="Takımın Dönüşüm Hunisi" en="The Team's Conversion Funnel" />}>
+        <TeamFunnelChart />
+      </DashboardSection>
+
       <TeamAssistantCard />
 
       <DashboardSection id="ozet" eyebrow={<T tr="Genel Bakış" en="Overview" />} title={<T tr="Seçili Dönemin Özeti" en="Selected Period Summary" />}>
