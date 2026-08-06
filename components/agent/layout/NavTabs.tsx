@@ -7,6 +7,7 @@ import {
   PhoneCall,
   ListChecks,
   Medal,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { useLang } from "@/components/i18n/LanguageProvider";
@@ -32,6 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/agent/aramalar", label: "Aramalar & Funnel", labelEn: "Calls & Funnel", icon: PhoneCall },
   { href: "/agent/follow-up", label: "Follow-up", labelEn: "Follow-up", icon: ListChecks },
   { href: "/agent/performans", label: "Performansım", labelEn: "My Performance", icon: Medal },
+  { href: "/agent/pdks", label: "Mesai & PDKS", labelEn: "Attendance & Hours", icon: Clock },
 ];
 
 export function NavTabs({ collapsed = false }: { collapsed?: boolean } = {}) {

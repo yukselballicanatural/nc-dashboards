@@ -179,6 +179,15 @@ export function shiftWeek(lang: Lang = "tr"): ShiftDay[] {
   return SHIFT_WEEK_RAW.map(({ ts, ...rest }) => ({ date: shortDate(ts, lang), ...rest }));
 }
 
+/**
+ * Ham (tarih damgalı) vardiya haftası — PDKS motorunun (lib/mock/pdks.ts)
+ * son 7 gününü bu diziden türetir. Böylece PDKS sayfasındaki ilk giriş / son
+ * çıkış saatleri, Dashboard'daki "Son 7 Gün Vardiya" tablosuyla BİREBİR aynı
+ * kalır; iki ekran çelişmez.
+ */
+export const SHIFT_WEEK_TIMESTAMPED: ReadonlyArray<Omit<ShiftDay, "date"> & { ts: number }> =
+  SHIFT_WEEK_RAW;
+
 const shiftCompliancePct =
   (SHIFT_WEEK_RAW.filter((d) => d.lateMinutes <= 5).length / SHIFT_WEEK_RAW.length) * 100;
 const totalLateMinutes = SHIFT_WEEK_RAW.reduce((s, d) => s + d.lateMinutes, 0);

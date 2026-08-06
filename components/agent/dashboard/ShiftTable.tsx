@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { shiftWeek } from "@/lib/mock/mock-data";
 import { useLang } from "@/components/i18n/LanguageProvider";
 import { T } from "@/components/i18n/T";
@@ -11,6 +13,8 @@ import { cn } from "@/lib/utils/cn";
 /**
  * Vardiya tablosu — v2 4.6: son 7 gün.
  * Geç kalma >5 dk olan satırlar kırmızı/kalın vurgulanır.
+ * Turnike bazlı 30 günlük döküm ve eksik mesai bakiyesi için "Mesai & PDKS"
+ * sayfasına link verir (bkz. app/agent/pdks/page.tsx).
  */
 export function ShiftTable() {
   const { t, lang } = useLang();
@@ -27,7 +31,18 @@ export function ShiftTable() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint={t("Planlanan vardiyan 09:00-18:00. 5 dakikadan fazla geç başlayan günler kırmızı işaretlenir.", "Your planned shift is 09:00-18:00. Days starting more than 5 minutes late are marked red.")}>
+      <SectionTitle
+        hint={t("Planlanan vardiyan 09:00-18:00. 5 dakikadan fazla geç başlayan günler kırmızı işaretlenir.", "Your planned shift is 09:00-18:00. Days starting more than 5 minutes late are marked red.")}
+        aside={
+          <Link
+            href="/agent/pdks"
+            className="group flex shrink-0 items-center gap-1 font-body text-[11px] font-semibold text-brand transition-colors hover:text-brand-secondary"
+          >
+            <T tr="Turnike dökümü ve eksik mesai" en="Turnstile log and missing hours" />
+            <ArrowRight size={13} aria-hidden className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        }
+      >
         <T tr="Son 7 Gün Vardiya" en="Last 7 Days' Shifts" />
       </SectionTitle>
 
