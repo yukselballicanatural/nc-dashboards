@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
@@ -12,6 +13,16 @@ interface SidebarContextValue {
   collapsed: boolean;
   toggleCollapsed: () => void;
   setCollapsed: (value: boolean) => void;
+  /**
+   * Mobil/tablet çekmecesi açık mı. Masaüstünde kenar çubuğu her zaman
+   * görünür olduğu için bu değer yalnızca `lg` altındaki kırılımda anlam
+   * taşır. KALICI DEĞİL (localStorage'a yazılmaz): menünün sayfa açılışında
+   * kapalı olması beklenen davranıştır, aksi hâlde mobilde içeriği kapatarak
+   * açılırdı.
+   */
+  mobileOpen: boolean;
+  setMobileOpen: (value: boolean) => void;
+  toggleMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -58,6 +69,7 @@ function persistCollapsed(value: boolean): void {
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const collapsed = useSyncExternalStore(subscribe, readCollapsed, getServerSnapshot);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const setCollapsed = useCallback((value: boolean) => {
     persistCollapsed(value);
@@ -67,8 +79,14 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     persistCollapsed(!collapsed);
   }, [collapsed]);
 
+  const toggleMobile = useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
+
   return (
-    <SidebarContext.Provider value={{ collapsed, toggleCollapsed, setCollapsed }}>
+    <SidebarContext.Provider
+      value={{ collapsed, toggleCollapsed, setCollapsed, mobileOpen, setMobileOpen, toggleMobile }}
+    >
       {children}
     </SidebarContext.Provider>
   );

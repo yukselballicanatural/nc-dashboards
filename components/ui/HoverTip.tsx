@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils/cn";
  * Ebeveyn öğeye `group relative` verilir; bu balon mouse ile üstüne gelince
  * yumuşakça belirir (fade + hafif yükselme). pointer-events-none olduğu için
  * etkileşimi engellemez. prefers-reduced-motion'da geçiş süresi CSS ile sıfırlanır.
+ *
+ * GENİŞLİK: balon `whitespace-nowrap` ile tek satırda dururdu; uzun ipucu
+ * metinlerinde bu, görünmez hâldeyken bile sayfanın scrollWidth'ini büyütüp
+ * mobilde yatay kaydırma yaratıyordu. Artık ekran genişliğini aşmayacak bir
+ * üst sınır var ve sınıra gelen metin satır atlar.
  */
 export function HoverTip({
   children,
@@ -26,7 +31,7 @@ export function HoverTip({
         className,
       )}
     >
-      <div className="whitespace-nowrap rounded-control border border-border bg-elevated px-3 py-2 shadow-card">
+      <div className="w-max max-w-[min(20rem,calc(100vw-2.5rem))] rounded-control border border-border bg-elevated px-3 py-2 shadow-card">
         {children}
       </div>
     </div>

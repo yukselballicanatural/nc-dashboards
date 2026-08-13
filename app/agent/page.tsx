@@ -1,45 +1,39 @@
-import { EarningsHeroBand } from "@/components/agent/earnings/EarningsHeroBand";
-import { SalesTargetBar } from "@/components/agent/dashboard/SalesTargetBar";
+import { TopKpiStrip } from "@/components/agent/dashboard/TopKpiStrip";
+import { QuarterPerformanceCard } from "@/components/agent/dashboard/QuarterPerformanceCard";
 import { FullFunnelChart } from "@/components/agent/dashboard/FullFunnelChart";
 import { CallSnapshotCard } from "@/components/agent/dashboard/CallSnapshotCard";
-import { QuarterPerformanceCard } from "@/components/agent/dashboard/QuarterPerformanceCard";
 
 /**
- * AGENT DASHBOARD — sade, hızlı okunabilir, minimum etkileşim (kullanıcı
- * talebi). Yalnızca DÖRT ana performans alanı gösterilir:
+ * AGENT DASHBOARD — anlık performans farkındalığı için üç bantlı hiyerarşi
+ * (kullanıcı talebi). Öncelik detaylı raporlama DEĞİL; agent birkaç saniyede
+ * nerede olduğunu görmeli.
  *
- *   1. PRİM              → EarningsHeroBand (karşılama + hak edilen prim)
- *                          + SalesTargetBar (dinamik satış hedefi)
- *   2. FUNNEL            → FullFunnelChart (geçiş %'si + şirket kıyası)
- *   3. ARAMA BİLGİSİ     → CallSnapshotCard (canlı durum + oranlar)
- *   4. QUARTER PERFORMANSI → QuarterPerformanceCard (dilim + ilerleme)
+ *   ÜST   → Current Sales · Current Target · Prim Status   (TopKpiStrip)
+ *   ORTA  → Quarter Performance Slider                     (QuarterPerformanceCard)
+ *   ALT   → Funnel · Call Performance                      (yan yana)
  *
- * Agent giriş yaptığında satış durumunu, prim seviyesini, funnel'ı, arama
- * performansını ve çeyrek performansını birkaç saniyede görmelidir; bu yüzden
- * ek KPI ızgaraları, tablolar ve grafikler bu ekrandan KASITLI olarak
- * çıkarılmıştır. Hepsi kendi menü sayfalarında duruyor:
- *   · arama detayı, kırılım tabloları, callback listesi → /agent/aramalar
- *   · hedef, tempo, sıra, kıyaslama, prim tabloları, kalite → /agent/performans
- *   · turnike/mesai dökümü → /agent/pdks
- *   · aksiyon bekleyen kayıtlar → /agent/follow-up
- * Bu ekranda o sayfalara link YOKTUR — kullanıcı gereksiz detay ekranlarına
- * yönlendirilmemeli; menü zaten erişimi sağlıyor.
+ * DÖNEM DAVRANIŞI (bilinçli): üstteki tarih filtresi yalnızca ALT bandı
+ * (funnel + arama) etkiler. Üst şerit aylık/çeyreklik prim dönemlerini,
+ * Quarter slider ise aktif çeyreği gösterir; ikisi de filtreye bağlı DEĞİLDİR
+ * — modül seviyesindeki sabit dönem verisinden okurlar (agent-earnings.ts).
+ * Filtre değiştiğinde slider değerleri değişmez.
+ *
+ * Bu ekranda detay sayfalarına link YOKTUR (minimum click); tam tablolar,
+ * kırılımlar ve grafikler menü sayfalarında:
+ *   · /agent/aramalar (arama detayı, kırılımlar, callback)
+ *   · /agent/performans (hedef, tempo, sıra, kıyaslama, prim tabloları, kalite)
+ *   · /agent/pdks (turnike/mesai) · /agent/follow-up (aksiyon bekleyenler)
  */
 export default function AgentDashboardPage() {
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
-      {/* 1 — PRİM. Karşılama da bu bandın içinde: Dashboard "Merhaba, ..."
-          ile başlamalı (kullanıcı kararı) ve hak edilen prim ilk görülen
-          rakam olmalı. */}
-      <EarningsHeroBand />
+      {/* ÜST — kritik KPI'lar ilk ekranda */}
+      <TopKpiStrip />
 
-      {/* Dinamik satış hedefi — Prim alanının parçası (yeni bir ana başlık
-          değil): hedef mevcut satışa göre otomatik seçilir, elle seçim yok.
-          Kural: lib/mock/commission.ts → salesTargetProgress. */}
-      <SalesTargetBar />
+      {/* ORTA — çeyreğin aylık kırılımı, dergi/slayt deneyimi */}
+      <QuarterPerformanceCard />
 
-      {/* 2 — FUNNEL · 3 — ARAMA BİLGİSİ. Yan yana: ikisi de ilk ekranda
-          görünsün, scroll gerekmesin. Dar ekranda alt alta düşer. */}
+      {/* ALT — funnel ve arama performansı yan yana; dar ekranda alt alta */}
       <div className="grid grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <FullFunnelChart />
@@ -48,9 +42,6 @@ export default function AgentDashboardPage() {
           <CallSnapshotCard />
         </div>
       </div>
-
-      {/* 4 — QUARTER PERFORMANSI */}
-      <QuarterPerformanceCard />
     </div>
   );
 }

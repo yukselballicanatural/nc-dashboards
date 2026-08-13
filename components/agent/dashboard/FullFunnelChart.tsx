@@ -59,6 +59,11 @@ export function FullFunnelChart() {
         <T tr="Genel Funnel (Tüm Zamanlar)" en="Overall Funnel (All Time)" />
       </SectionTitle>
 
+      {/* Dar ekranda kart İÇİNDE yatay kaydırma: dört kolon (aşama · önceki %
+          · lead % · şirket kıyası) 420px'in altına sığmıyor; sayfayı yatay
+          taşırmak yerine burada kaydırılır. */}
+      <div className="-mx-1 overflow-x-auto px-1">
+      <div className="min-w-[420px]">
       {/* Kolon başlıkları */}
       <div className="flex items-center gap-3 font-body text-[10px] uppercase tracking-wide text-fg-muted">
         <span className="w-32 shrink-0"><T tr="Aşama" en="Stage" /></span>
@@ -68,7 +73,7 @@ export function FullFunnelChart() {
         <span className="w-24 shrink-0 text-right"><T tr="Şirkete Göre" en="vs. Company" /></span>
       </div>
 
-      <ul className="flex flex-1 flex-col justify-center gap-2">
+      <ul className="mt-4 flex flex-1 flex-col justify-center gap-2">
         {FULL_FUNNEL.map((stage, index) => {
           const widthPct = (stage.count / max) * 100;
           const transitionKey = FUNNEL_STAGE_TRANSITION[stage.key];
@@ -166,6 +171,8 @@ export function FullFunnelChart() {
           );
         })}
       </ul>
+      </div>
+      </div>
     </Card>
   );
 }

@@ -5,6 +5,7 @@ import { qualityKpis, shiftKpis, targetKpis } from "@/lib/mock/mock-data";
 import { AGENT_REGION, earningsKpis } from "@/lib/mock/agent-earnings";
 import { T } from "@/components/i18n/T";
 import { useLang } from "@/components/i18n/LanguageProvider";
+import { SalesTargetBar } from "@/components/agent/dashboard/SalesTargetBar";
 import { EarningsHeroBand } from "@/components/agent/earnings/EarningsHeroBand";
 import { DailyCommissionTable } from "@/components/agent/earnings/DailyCommissionTable";
 import { QuarterTierLadder } from "@/components/agent/earnings/QuarterTierLadder";
@@ -49,6 +50,10 @@ export default function PerformansPage() {
         title={<T tr="Aylık Hedefin" en="Your Monthly Target" />}
       >
         <div className="flex flex-col gap-4 sm:gap-5">
+          {/* Dinamik satış hedefi — TAM sürüm (hedef merdiveni görünür).
+              Dashboard'da bunun kompakt hâli var (TopKpiStrip → Current
+              Target); merdivenin tamamı bu detay sayfasında. */}
+          <SalesTargetBar />
           <KpiGrid kpis={targetKpis(lang)} className="lg:grid-cols-5" />
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
             <div className="lg:col-span-4">
