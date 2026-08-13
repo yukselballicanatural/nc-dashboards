@@ -1,10 +1,15 @@
 import { T } from "@/components/i18n/T";
 import { DashboardHeader } from "@/components/agent/dashboard/DashboardHeader";
+import { ActionCenter } from "@/components/agent/dashboard/ActionCenter";
 import { FollowUpTable } from "@/components/agent/dashboard/FollowUpTable";
 
 /**
  * Follow-up Listesi — v2 4.4.
  * Aksiyon bekleyen tüm lead'ler, öncelik sırasıyla; filtre + arama.
+ *
+ * "Bugün yapman gerekenler" özeti (ActionCenter, CLAUDE.md 4.3) Dashboard dört
+ * ana alana indirildiği için buraya taşındı — doğal evi burası: özet üstte,
+ * tam liste altında.
  */
 export default function FollowUpPage() {
   return (
@@ -18,6 +23,7 @@ export default function FollowUpPage() {
           />
         }
       />
+      <ActionCenter />
       <FollowUpTable />
     </div>
   );

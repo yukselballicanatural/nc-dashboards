@@ -9,8 +9,10 @@ import { StatusDot } from "@/components/ui/StatusDot";
 
 /**
  * Aksiyon Merkezi — "ne yapmalıyım" listesi, seçili döneme göre (context).
- * Renkli durum noktası + metin + ok; tıklanınca sayfa içinde ilgili bölüme
- * kaydırır. Boş durumda yönlendirici metin (CLAUDE.md 7).
+ * Renkli durum noktası + metin + ok; her satır ilgili menü sayfasına gider
+ * (href'ler compute.ts'te tanımlı). Boş durumda yönlendirici metin
+ * (CLAUDE.md 7). Dashboard dört ana alana indirildiğinden bu kart artık
+ * Follow-up sayfasının üstünde duruyor.
  */
 export function ActionCenter() {
   const { data } = useDateRange();
