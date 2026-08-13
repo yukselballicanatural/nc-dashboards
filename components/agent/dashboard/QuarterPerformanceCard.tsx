@@ -3,17 +3,17 @@
 import { Target, TrendingUp } from "lucide-react";
 import {
   CURRENT_QUARTER,
-  CURRENT_QUARTER_MONTHS,
   MONTHS_ELAPSED_IN_QUARTER,
   QUARTER_PROGRESS,
   QUARTER_TO_DATE_EUR,
 } from "@/lib/mock/agent-earnings";
-import { formatCurrencyEUR, formatRatePct, monthsFor } from "@/lib/utils/format";
+import { formatCurrencyEUR, formatRatePct } from "@/lib/utils/format";
 import { useLang } from "@/components/i18n/LanguageProvider";
 import { T } from "@/components/i18n/T";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { HoverTip } from "@/components/ui/HoverTip";
+import { QuarterSlider } from "./QuarterSlider";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -22,8 +22,9 @@ import { cn } from "@/lib/utils/cn";
  *
  * Eski Dashboard bu bilgiyi 207 satırlık QuarterTierLadder ile veriyordu —
  * tüm dilimler tek tek listelendiği için ~500px yer kaplıyordu. Burada aynı
- * kural üç rakam + tek ilerleme çubuğu + üç aylık mini bar ile veriliyor.
- * Merdivenin tamamı "Performansım" sayfasında duruyor.
+ * kural dört rakam + tek ilerleme çubuğu ile veriliyor; çeyreğin aylık
+ * kırılımı ise dergi/slayt deneyimindeki QuarterSlider'da. Merdivenin tamamı
+ * "Performansım" sayfasında duruyor.
  *
  * KURAL (commission.ts): ekstra komisyon ORANI çeyreğin AYLIK ORTALAMA
  * satışına göre seçilir, TUTAR ise çeyrek TOPLAMI üzerinden hesaplanır. Bu
@@ -61,9 +62,8 @@ function BigStat({
 }
 
 export function QuarterPerformanceCard() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const q = QUARTER_PROGRESS;
-  const months = monthsFor(lang);
 
   /**
    * İlerleme çubuğu: mevcut dilim eşiğinden sonraki dilim eşiğine kadar aylık
@@ -75,8 +75,6 @@ export function QuarterPerformanceCard() {
   const progressPct = q.nextBand
     ? Math.max(0, Math.min(100, ((q.monthlyAvgEUR - fromEUR) / span) * 100))
     : 100;
-
-  const maxMonthSales = Math.max(1, ...CURRENT_QUARTER_MONTHS.map((m) => m.salesEUR));
 
   return (
     <Card className="flex flex-col gap-4">
@@ -94,7 +92,11 @@ export function QuarterPerformanceCard() {
         <T tr="Quarter Performansın" en="Your Quarter Performance" />
       </SectionTitle>
 
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Aylık ortalama BİLİNÇLİ olarak burada yok: aynı rakam hemen altındaki
+          slider başlığında "Çeyrek Ortalaması" olarak gösteriliyor, iki kez
+          yazmak ekranı kalabalıklaştırıyordu. Dilim ilerleme çubuğu da o
+          ortalama üzerinden ölçülür (bkz. SectionTitle hint). */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         <BigStat
           label={<T tr="Çeyrek satışın" en="Quarter sales" />}
           value={formatCurrencyEUR(QUARTER_TO_DATE_EUR)}
@@ -102,15 +104,6 @@ export function QuarterPerformanceCard() {
             `Çeyrek başından bugüne tahsilatı alınan satış toplamın (${MONTHS_ELAPSED_IN_QUARTER} ay).`,
             `Your collected sales since the start of the quarter (${MONTHS_ELAPSED_IN_QUARTER} month(s)).`,
           )}
-        />
-        <BigStat
-          label={<T tr="Aylık ortalaman" en="Monthly average" />}
-          value={formatCurrencyEUR(q.monthlyAvgEUR)}
-          hint={t(
-            "Çeyrek toplamı ÷ geçen ay sayısı. Prim dilimin bu rakama göre belirlenir.",
-            "Quarter total ÷ months elapsed. Your commission tier is set by this figure.",
-          )}
-          tone="brand"
         />
         <BigStat
           label={<T tr="Mevcut dilimin" en="Current tier" />}
@@ -181,59 +174,10 @@ export function QuarterPerformanceCard() {
         </p>
       </div>
 
-      {/* Çeyreğin ayları */}
-      <div className="flex items-end gap-3">
-        {CURRENT_QUARTER_MONTHS.map((month) => {
-          const heightPct = Math.max(6, (month.salesEUR / maxMonthSales) * 100);
-          const isProjected = month.status === "projected";
-          const isCurrent = month.status === "current";
-          return (
-            <div key={month.key} className="group relative flex flex-1 flex-col items-center gap-1.5">
-              <span className="font-mono text-[10.5px] font-semibold text-fg-secondary">
-                {/* Geçmiş/içinde bulunulan ayda 0 satış gerçek bir bilgidir —
-                    "—" yalnızca henüz başlamamış ay için. */}
-                {isProjected ? "—" : formatCurrencyEUR(month.salesEUR)}
-              </span>
-              <div className="flex h-12 w-full max-w-[72px] items-end">
-                <div
-                  className={cn(
-                    "w-full rounded-t-[6px]",
-                    isProjected
-                      ? "border border-dashed border-border bg-transparent"
-                      : isCurrent
-                        ? "bg-brand"
-                        : "bg-violet",
-                  )}
-                  style={{ height: `${heightPct}%` }}
-                />
-              </div>
-              <span
-                className={cn(
-                  "font-body text-[10.5px]",
-                  isCurrent ? "font-semibold text-brand" : "text-fg-muted",
-                )}
-              >
-                {months[month.monthIndex]}
-              </span>
-              <HoverTip>
-                <p className="mb-0.5 font-display text-[12px] font-semibold text-fg">
-                  {months[month.monthIndex]}
-                </p>
-                <p className="font-mono text-[11px] text-fg-secondary">
-                  {formatCurrencyEUR(month.salesEUR)}
-                </p>
-                <p className="font-body text-[10.5px] text-fg-muted">
-                  {isProjected
-                    ? t("henüz gelmedi", "not yet started")
-                    : isCurrent
-                      ? t("içinde bulunulan ay", "current month")
-                      : t("kesinleşmiş", "settled")}
-                </p>
-              </HoverTip>
-            </div>
-          );
-        })}
-      </div>
+      {/* Çeyreğin ayları — dergi/slayt deneyimi (kullanıcı talebi):
+          klasik bar grafiği yerine sağa/sola kaydırılan ay kartları, her
+          kartta o ayın kendi hedef barı. Bkz. QuarterSlider. */}
+      <QuarterSlider />
     </Card>
   );
 }

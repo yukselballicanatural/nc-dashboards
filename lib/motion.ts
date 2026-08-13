@@ -27,6 +27,12 @@ export const DURATION = {
   chart: 0.16,
   /** Tema geçişi — 3.1 (280ms, CSS tarafında da sabit) */
   theme: 0.24,
+  /**
+   * Slayt/carousel geçişi (Quarter slider). Diğer sürelerden uzun olması
+   * bilinçli: kullanıcı kaydırma yönünü takip edebilmeli, aksi hâlde kart
+   * "yer değiştirmiş" gibi görünür ve dergi hissi kaybolur.
+   */
+  slide: 0.26,
 } as const;
 
 // Easing eğrileri

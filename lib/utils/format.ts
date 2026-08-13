@@ -67,6 +67,24 @@ export function monthsFor(lang: Lang): ReadonlyArray<string> {
   return lang === "en" ? MONTHS_EN : MONTHS_TR;
 }
 
+export const MONTHS_LONG_TR = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+] as const;
+
+export const MONTHS_LONG_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+] as const;
+
+/**
+ * Aktif dile göre TAM ay adı dizisi — kısa ("Haz") yerine tam ("Haziran")
+ * ad gereken yerler için (örn. Quarter slider'ının dergi başlığı).
+ */
+export function longMonthsFor(lang: Lang): ReadonlyArray<string> {
+  return lang === "en" ? MONTHS_LONG_EN : MONTHS_LONG_TR;
+}
+
 /**
  * ISO string → "13 Tem" / "13 Jul". TZ dönüşümü yapılmadan string'den
  * ayrıştırılır (SSR/CSR hydration tutarlılığı; saat dilimi backend fazında
