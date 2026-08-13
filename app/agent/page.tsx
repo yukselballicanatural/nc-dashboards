@@ -1,4 +1,5 @@
 import { EarningsHeroBand } from "@/components/agent/earnings/EarningsHeroBand";
+import { SalesTargetBar } from "@/components/agent/dashboard/SalesTargetBar";
 import { FullFunnelChart } from "@/components/agent/dashboard/FullFunnelChart";
 import { CallSnapshotCard } from "@/components/agent/dashboard/CallSnapshotCard";
 import { QuarterPerformanceCard } from "@/components/agent/dashboard/QuarterPerformanceCard";
@@ -8,6 +9,7 @@ import { QuarterPerformanceCard } from "@/components/agent/dashboard/QuarterPerf
  * talebi). Yalnızca DÖRT ana performans alanı gösterilir:
  *
  *   1. PRİM              → EarningsHeroBand (karşılama + hak edilen prim)
+ *                          + SalesTargetBar (dinamik satış hedefi)
  *   2. FUNNEL            → FullFunnelChart (geçiş %'si + şirket kıyası)
  *   3. ARAMA BİLGİSİ     → CallSnapshotCard (canlı durum + oranlar)
  *   4. QUARTER PERFORMANSI → QuarterPerformanceCard (dilim + ilerleme)
@@ -30,6 +32,11 @@ export default function AgentDashboardPage() {
           ile başlamalı (kullanıcı kararı) ve hak edilen prim ilk görülen
           rakam olmalı. */}
       <EarningsHeroBand />
+
+      {/* Dinamik satış hedefi — Prim alanının parçası (yeni bir ana başlık
+          değil): hedef mevcut satışa göre otomatik seçilir, elle seçim yok.
+          Kural: lib/mock/commission.ts → salesTargetProgress. */}
+      <SalesTargetBar />
 
       {/* 2 — FUNNEL · 3 — ARAMA BİLGİSİ. Yan yana: ikisi de ilk ekranda
           görünsün, scroll gerekmesin. Dar ekranda alt alta düşer. */}

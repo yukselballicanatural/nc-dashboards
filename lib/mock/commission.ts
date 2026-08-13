@@ -144,6 +144,101 @@ export function monthlyCommission({
 }
 
 /* ------------------------------------------------------------------ */
+/* DİNAMİK SATIŞ HEDEFİ (TARGET LADDER)                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Agent'ın bir sonraki AYLIK satış hedefi, mevcut satışına göre otomatik
+ * belirlenir — manuel hedef seçimi YOKTUR (kullanıcı talebi).
+ *
+ * Merdiven, aylık komisyon bantlarının eşiklerinden TÜRETİLİR; buradaki
+ * 12.500 / 15.000 gibi sayılar elle yazılmaz (bkz. MONTHLY_RULES):
+ *
+ *   1. eşik = rule.minimumSalesEUR      (İstanbul 12.500 · Fas 12.000)
+ *   2. eşik = rule.highThresholdEUR     (15.000 — en yüksek komisyon bandı)
+ *   3. ve sonrası = 2. eşik + n × TARGET_STEP_EUR  (20.000, 25.000, 30.000 …)
+ *
+ * Eşiği TAM tutmak "geçmiş" sayılır: 15.000 € satan agent'ın hedefi 20.000 €
+ * olur. Bu, komisyon kuralıyla tutarlıdır — hesaplama notu 3 gereği tam
+ * 15.000 üst banda dahildir (bkz. MONTHLY_RULES üstündeki not).
+ */
+export const TARGET_STEP_EUR = 5_000;
+
+export interface SalesTargetProgress {
+  /** Mevcut satış (€). */
+  currentEUR: number;
+  /** Otomatik belirlenen bir sonraki hedef (€). */
+  targetEUR: number;
+  /** Hedefe kalan tutar (€) — hedefe ulaşıldıysa 0. */
+  remainingEUR: number;
+  /** Hedef gerçekleşme yüzdesi = mevcut ÷ hedef (1 ondalık). */
+  progressPct: number;
+  /** Merdivendeki seviye (1 = ilk eşik). */
+  level: number;
+  /**
+   * Bu hedefin bir alt eşiği (€) — barda "bu seviyeye nereden geldim"
+   * segmentini çizmek için. İlk seviyede 0.
+   */
+  previousTargetEUR: number;
+  /**
+   * Bu hedefe ulaşınca aylık komisyon ORANI değişiyorsa yeni oran (yüzde
+   * puan); hedef bir komisyon bandı eşiği değilse null. 15.000 üstündeki
+   * hedefler oranı değiştirmez — bu yüzden orada null döner ve UI yanlış
+   * bir "oranın artacak" vaadi vermez.
+   */
+  unlocksRatePct: number | null;
+}
+
+/**
+ * Mevcut aylık satışa göre hedef bar verisini üretir. Saf fonksiyon —
+ * satış değiştiğinde hedef kendiliğinden bir üst seviyeye geçer.
+ */
+export function salesTargetProgress(
+  monthlySalesEUR: number,
+  region: CommissionRegion = "Istanbul",
+): SalesTargetProgress {
+  const rule = MONTHLY_RULES[region];
+  const first = rule.minimumSalesEUR;
+  const second = rule.highThresholdEUR;
+  const sales = Math.max(0, monthlySalesEUR);
+
+  let targetEUR: number;
+  let previousTargetEUR: number;
+  let level: number;
+  let unlocksRatePct: number | null;
+
+  if (sales < first) {
+    targetEUR = first;
+    previousTargetEUR = 0;
+    level = 1;
+    unlocksRatePct = rule.standardRatePct;
+  } else if (sales < second) {
+    targetEUR = second;
+    previousTargetEUR = first;
+    level = 2;
+    unlocksRatePct = rule.highRatePct;
+  } else {
+    // İkinci eşiği tutan/geçen satış: 5.000'lik adımlarla devam.
+    const stepsPassed = Math.floor((sales - second) / TARGET_STEP_EUR) + 1;
+    targetEUR = second + stepsPassed * TARGET_STEP_EUR;
+    previousTargetEUR = targetEUR - TARGET_STEP_EUR;
+    level = 2 + stepsPassed;
+    // En üst komisyon bandı zaten yakalandı; bu hedefler oranı artırmaz.
+    unlocksRatePct = null;
+  }
+
+  return {
+    currentEUR: sales,
+    targetEUR,
+    remainingEUR: Math.max(0, targetEUR - sales),
+    progressPct: targetEUR > 0 ? Math.round((sales / targetEUR) * 1000) / 10 : 0,
+    level,
+    previousTargetEUR,
+    unlocksRatePct,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* ÇEYREK TAKVİMİ — tüm bölgeler için ortak                            */
 /* ------------------------------------------------------------------ */
 
